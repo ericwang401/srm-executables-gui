@@ -1,0 +1,7 @@
+@font-face {
+    font-family: "Cal Sans";
+    src: url($lib/assets/fonts/CalSans-SemiBold.ttf),
+        url($lib/assets/fonts/CalSans-SemiBold.woff),
+        url($lib/assets/fonts/CalSans-SemiBold.woff2);
+    font-weight: 600;
+}
