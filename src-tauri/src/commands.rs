@@ -55,10 +55,15 @@ pub async fn process_data(app_handle: tauri::AppHandle) -> Result<(), String> {
             .set_file_name("Data.RateConst.csv")
             .add_filter("Output CSV File", &vec!["csv"])
             .save_file(move |file_path| {
-                std::fs::copy(
-                    format!("{}/Data.RateConst.csv", data_dir.to_str().unwrap()),
-                    file_path.unwrap(),
-                ).unwrap();
+                match file_path {
+                    Some(file_path) => {
+                        std::fs::copy(
+                            format!("{}/Data.RateConst.csv", data_dir.to_str().unwrap()),
+                            file_path,
+                        ).unwrap();
+                    }
+                    None => (),
+                }
             });
 
         Ok(())

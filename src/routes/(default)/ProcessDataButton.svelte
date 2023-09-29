@@ -1,28 +1,31 @@
-<script lang="ts">
-    import { convertFileSrc, invoke } from '@tauri-apps/api/tauri'
-    import { Button } from '$lib/components/ui/button'
-    import { toast } from 'svelte-sonner'
-    import { appLocalDataDir, join } from '@tauri-apps/api/path'
+<script lang="ts" context="module">
+    import { writable } from 'svelte/store'
 
-    let loading = false
+    export const loading = writable(false)
+</script>
+
+<script lang="ts">
+    import { Button } from '$lib/components/ui/button'
+    import { invoke } from '@tauri-apps/api/tauri'
+    import { toast } from 'svelte-sonner'
 
     const processData = async () => {
-        loading = true
+        $loading = true
         try {
             await invoke('process_data')
 
             toast.success('Data processed successfully')
 
-            loading = false
+            $loading = false
         } catch (e) {
             toast.error((e as Error).message)
 
-            loading = false
+            $loading = false
             return
         }
     }
 </script>
 
 <div class="flex justify-end py-4">
-    <Button {loading} on:click={processData}>Process data</Button>
+    <Button loading={$loading} on:click={processData}>Process data</Button>
 </div>
