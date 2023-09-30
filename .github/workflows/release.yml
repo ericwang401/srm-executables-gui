@@ -1,0 +1,56 @@
+name: Release
+on:
+    push:
+        tags:
+            - 'v*'
+
+jobs:
+    release:
+        permissions:
+            contents: write
+        strategy:
+            fail-fast: false
+            matrix:
+                platform: [windows-latest]
+
+        runs-on: ${{ matrix.platform }}
+        steps:
+            - uses: actions/checkout@v3
+            - name: Create release branch and bump version
+              id: create_release
+              env:
+                REF: ${{ github.ref }}
+              run: |
+                BRANCH=release/${REF:10}
+                git config --local user.email "ci@performave.com"
+                git config --local user.name "Performave CI"
+                git checkout -b $BRANCH
+                git push -u origin $BRANCH
+                sed -i 's/"version": "0.0.0",/"version": "'"${REF:11}"'",/' src-tauri/tauri.conf.json
+                git add src-tauri/tauri.conf.json
+                git commit -m "bump version for release"
+                git pull
+                git push
+                echo "version_name=${REF:10}" >> $GITHUB_OUTPUT
+            - name: setup node
+              uses: actions/setup-node@v3
+              with:
+                  node-version: 18
+            - name: install Rust stable
+              uses: dtolnay/rust-toolchain@stable
+            - name: install dependencies (ubuntu only)
+              if: matrix.platform == 'ubuntu-20.04'
+              run: |
+                  sudo apt-get update
+                  sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libappindicator3-dev librsvg2-dev patchelf
+            - name: install frontend dependencies
+              run: npm install
+            - uses: tauri-apps/tauri-action@v0
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                  tagName: ${{ github.ref }}
+                  releaseName: ${{ steps.extract_changelog.outputs.version_name }}
+                  releaseBody: 'See the assets to download this version and install.'
+                  releaseDraft: true
+                  prerelease: false
