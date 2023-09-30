@@ -17,6 +17,7 @@ jobs:
         steps:
             - uses: actions/checkout@v3
             - name: Create release branch and bump version
+              shell: bash
               id: create_release
               env:
                 REF: ${{ github.ref }}
