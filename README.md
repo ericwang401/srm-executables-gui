@@ -1,4 +1,4 @@
-# SRM Executables GUI
+<h1><img src="https://github.com/ericwang401/srm-executables-gui/assets/37554696/15efa103-d05c-4808-9fe1-afb4837a2a8f" height="30"/> SRM Executables GUI</h1>
 
 <img src="https://i.imgur.com/wIEisIH.png" width="500" />
 
