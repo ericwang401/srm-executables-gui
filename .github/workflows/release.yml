@@ -23,7 +23,7 @@ jobs:
                 REF: ${{ github.ref }}
               run: |
                 BRANCH=release/${REF:10}
-                sed -i 's/"version": "0.0.0",/"version": "'"${REF:11}"'",/' src-tauri/tauri.conf.json
+                sed -i 's/"version": "0.0.0"/"version": "'"${REF:11}"'"/' src-tauri/tauri.conf.json
                 echo "version_name=${REF:10}" >> $GITHUB_OUTPUT
             - name: setup node
               uses: actions/setup-node@v3
