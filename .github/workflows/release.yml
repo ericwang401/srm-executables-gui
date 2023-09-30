@@ -44,6 +44,5 @@ jobs:
               with:
                   tagName: ${{ github.ref }}
                   releaseName: ${{ steps.bump_version.outputs.version_name }}
-                  releaseBody: 'See the assets to download this version and install.'
                   releaseDraft: true
                   prerelease: false
