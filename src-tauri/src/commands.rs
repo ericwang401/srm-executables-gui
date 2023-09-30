@@ -86,6 +86,10 @@ pub async fn process_data(app_handle: tauri::AppHandle) -> Result<(), String> {
         data_dir.to_str().unwrap()
     ));
     command.arg(format!("{}/Data.csv", data_dir.to_str().unwrap()));
+    // additional context here: https://stackoverflow.com/questions/60750113/how-do-i-hide-the-console-window-for-a-process-started-with-stdprocesscomman
+    // CREATE_NO_WINDOW flag. See: https://learn.microsoft.com/en-us/windows/win32/procthread/process-creation-flags#CREATE_NO_WINDOW
+    // CREATE_NO_WINDOW comes at a disadvantage of not being able to read the output of the process. DETACHED_PROCESS can be used instead if output is needed.
+    command.creation_flags(0x08000000);
 
     let output = command
         .output()
