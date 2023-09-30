@@ -1,38 +1,29 @@
-# create-svelte
+# SRM Executables GUI
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/master/packages/create-svelte).
+<img src="https://i.imgur.com/wIEisIH.png" width="500" />
 
-## Creating a project
+A GUI for <a href="https://github.com/rgsadygov/SRM_executables">SRM Executables</a>, which is a command-line utility. Internally, this GUI is not a complete rewrite of SRM executables; it is a wrapper over the command-line interface, and a command is still executed.
 
-If you're seeing this, you've probably already done this step. Congrats!
+## Contributors
 
-```bash
-# create a new project in the current directory
-npm create svelte@latest
+- Created by <a href="https://github.com/ericwang401">Eric Wang</a>
 
-# create a new project in my-app
-npm create svelte@latest my-app
-```
+## Downloads
 
-## Developing
+Downloads are available in the releases section in the right side of your screen on desktop.
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+## Development
+
+Once you've cloned this project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
 
 ```bash
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+npm run tauri dev
 ```
 
-## Building
+## Production
 
-To create a production version of your app:
+To create a production version of SRM executables:
 
 ```bash
-npm run build
+npm run tauri build
 ```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
