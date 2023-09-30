@@ -37,13 +37,6 @@
           "$APPLOCALDATA/**/*"
         ],
         "writeFile": true
-      },
-      "protocol": {
-        "all": false,
-        "asset": true,
-        "assetScope": [
-          "$APPLOCALDATA/**/*"
-        ]
       }
     },
     "bundle": {
@@ -80,7 +73,7 @@
       }
     },
     "security": {
-      "csp": "default-src 'self'; default-src 'self' asset: https://asset.localhost"
+      "csp": null
     },
     "updater": {
       "active": false

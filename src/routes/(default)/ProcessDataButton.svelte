@@ -18,7 +18,7 @@
 
             $loading = false
         } catch (e) {
-            toast.error((e as Error).message)
+            toast.error(e as string)
 
             $loading = false
             return

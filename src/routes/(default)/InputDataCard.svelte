@@ -2,65 +2,40 @@
     import * as Card from '$lib/components/ui/card'
     import { Button } from '$lib/components/ui/button'
     import { Icon, DocumentChartBar } from 'svelte-hero-icons'
-    import {  writeBinaryFile, BaseDirectory, writeTextFile, exists, createDir } from '@tauri-apps/api/fs';
-
+    import { invoke } from '@tauri-apps/api/tauri'
+    import { toast } from 'svelte-sonner'
 
     let isSelectingInputData = false
-    let inputData: File | null = null
+    let inputDataName: string | null = null
 
     let isSelectingHeavyWaterInputData = false
-    let heavyWaterInputData: File | null = null
-
-    const createDataFolderIfDoesntExist = async () => {
-        const folderExists = await exists('data', { dir: BaseDirectory.AppLocalData})
-        if (!folderExists) {
-            await createDir('data', { dir: BaseDirectory.AppLocalData })
-        }
-    }
+    let heavyWaterInputDataName: string | null = null
 
     const selectInputData = async () => {
         isSelectingInputData = true
         try {
-            const [fileHandle] = await window.showOpenFilePicker({
-                types: [
-                    {
-                        description: 'Input data',
-                        accept: {
-                            'text/csv': ['.csv'],
-                        },
-                    },
-                ],
-            })
-            const file = await fileHandle.getFile()
-
-            inputData = file
-
-            const data = await inputData.arrayBuffer()
-
-            await createDataFolderIfDoesntExist()
-            writeBinaryFile('data/Data.csv', data, {
-                dir: BaseDirectory.AppLocalData,
+            const filename: string = await invoke('select_data', {
+                dataInputType: 'inputData',
             })
 
-        } catch {}
+            inputDataName = filename ? filename : inputDataName
+        } catch (e) {
+            toast.error(e as string)
+        }
         isSelectingInputData = false
     }
 
     const selectHeavyWaterInputData = async () => {
         isSelectingHeavyWaterInputData = true
         try {
-            const [fileHandle] = await window.showOpenFilePicker()
-            const file = await fileHandle.getFile()
-
-            heavyWaterInputData = file
-
-            const data = await heavyWaterInputData.arrayBuffer()
-
-            await createDataFolderIfDoesntExist()
-            writeBinaryFile('data/HeavyWater_Data.txt', data, {
-                dir: BaseDirectory.AppLocalData,
+            const filename: string = await invoke('select_data', {
+                dataInputType: 'heavyWaterInputData',
             })
-        } catch {}
+
+            heavyWaterInputDataName = filename ? filename : heavyWaterInputDataName
+        } catch (e) {
+            toast.error(e as string)
+        }
         isSelectingHeavyWaterInputData = false
     }
 </script>
@@ -76,25 +51,32 @@
             </Button>
             <div
                 class="h-10 grow overflow-hidden rounded-md border p-2 transition"
-                class:border-transparent={!inputData}
+                class:border-transparent={!inputDataName}
             >
-                <div class="fade-in-right flex items-center space-x-2" class:hidden={!inputData}>
+                <div class="fade-in-right flex items-center space-x-2" class:hidden={!inputDataName}>
                     <Icon src={DocumentChartBar} class="h-6 w-6 shrink-0" solid />
-                    <p class="truncate text-sm">{inputData?.name}</p>
+                    <p class="truncate text-sm">{inputDataName}</p>
                 </div>
             </div>
         </div>
         <div class="flex space-x-2">
-            <Button class="shrink-0" on:click={selectHeavyWaterInputData} disabled={isSelectingHeavyWaterInputData}>
+            <Button
+                class="shrink-0"
+                on:click={selectHeavyWaterInputData}
+                disabled={isSelectingHeavyWaterInputData}
+            >
                 Select heavy water data
             </Button>
             <div
                 class="h-10 grow overflow-hidden rounded-md border p-2 transition"
-                class:border-transparent={!heavyWaterInputData}
+                class:border-transparent={!heavyWaterInputDataName}
             >
-                <div class="fade-in-right flex items-center space-x-2" class:hidden={!heavyWaterInputData}>
+                <div
+                    class="fade-in-right flex items-center space-x-2"
+                    class:hidden={!heavyWaterInputDataName}
+                >
                     <Icon src={DocumentChartBar} class="h-6 w-6 shrink-0" solid />
-                    <p class="truncate text-sm">{heavyWaterInputData?.name}</p>
+                    <p class="truncate text-sm">{heavyWaterInputDataName}</p>
                 </div>
             </div>
         </div>
