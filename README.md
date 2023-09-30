@@ -2,7 +2,7 @@
 
 <img src="https://i.imgur.com/wIEisIH.png" width="500" />
 
-A GUI for <a href="https://github.com/rgsadygov/SRM_executables">SRM Executables</a>, which is a command-line utility. Internally, this GUI is not a complete rewrite of SRM executables; it is a wrapper over the command-line interface, and a command is still executed.
+A GUI for <a href="https://github.com/rgsadygov/SRM_executables">SRM Executables</a>, which is a command-line utility. Internally, this GUI is not a rewrite of SRM executables; it is a wrapper over the command-line interface, and a command is still executed.
 
 ## Contributors
 
