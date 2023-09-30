@@ -7,8 +7,8 @@
     "distDir": "../build"
   },
   "package": {
-    "productName": "srm-executables-gui",
-    "version": "0.1.0"
+    "productName": "SRM Executables",
+    "version": "0.0.0"
   },
   "tauri": {
     "allowlist": {
