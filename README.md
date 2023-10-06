@@ -6,7 +6,8 @@ A GUI for <a href="https://github.com/rgsadygov/SRM_executables">SRM Executables
 
 ## Contributors
 
-- Created by <a href="https://github.com/ericwang401">Eric Wang</a>
+-   Project led by <a href="mailto:Benjamin-Miller@omrf.org">Dr. Benjamin Miller</a> and <a href="mailto:Michael-Taylor@omrf.org">Dr. Michael Taylor</a> in the <a href="https://omrf.org/programs/aging-metabolism-research-program/">Oklahoma Medical Research Foundation Aging & Metabolism Research Program</a>
+-   Programmed by <a href="https://github.com/ericwang401">Eric Wang</a>
 
 ## Downloads
 

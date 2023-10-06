@@ -26,6 +26,6 @@
     }
 </script>
 
-<div class="flex justify-end py-4">
+<div class="flex justify-end pb-4">
     <Button loading={$loading} on:click={processData}>Process data</Button>
 </div>
