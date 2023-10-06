@@ -81,7 +81,7 @@
     "windows": [
       {
         "fullscreen": false,
-        "height": 600,
+        "height": 460,
         "resizable": true,
         "title": "SRM Executables",
         "width": 800
