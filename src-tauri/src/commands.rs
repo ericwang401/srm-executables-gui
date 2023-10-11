@@ -1,12 +1,18 @@
+use reqwest::Client;
+use serde::{Deserialize, Serialize};
 use std::io::Cursor;
 use tauri::api::dialog::blocking::FileDialogBuilder;
 use tokio::fs;
-
-use reqwest::Client;
+use crate::processor;
+use std::path::Path;
 
 #[tauri::command]
 pub async fn install_dependencies(app_handle: tauri::AppHandle) -> Result<(), String> {
-    let dependencies_dir = app_handle.path_resolver().app_local_data_dir().unwrap().join("dependencies");
+    let dependencies_dir = app_handle
+        .path_resolver()
+        .app_local_data_dir()
+        .unwrap()
+        .join("dependencies");
 
     if fs::try_exists(&dependencies_dir).await.unwrap() == true {
         fs::remove_dir_all(&dependencies_dir)
@@ -30,10 +36,14 @@ pub async fn install_dependencies(app_handle: tauri::AppHandle) -> Result<(), St
     Ok(())
 }
 
-#[tauri::command]
-pub async fn select_data(app_handle: tauri::AppHandle, data_input_type: String) -> Result<Option<String>, String> {
-    let data_dir = app_handle.path_resolver().app_local_data_dir().unwrap().join("data");
+#[derive(Serialize, Deserialize, Debug)]
+pub struct File {
+    name: String,
+    path: String,
+}
 
+#[tauri::command]
+pub async fn select_data(data_input_type: String) -> Result<Option<File>, String> {
     match data_input_type.as_str() {
         "inputData" => {
             let file_path = FileDialogBuilder::new()
@@ -41,29 +51,36 @@ pub async fn select_data(app_handle: tauri::AppHandle, data_input_type: String) 
                 .pick_file();
 
             if let Some(file_path) = file_path {
-                let file_name = file_path.file_name().unwrap();
+                let file_name = file_path
+                    .file_name()
+                    .unwrap()
+                    .to_string_lossy()
+                    .into_owned();
 
-                fs::copy(&file_path, format!("{}/Data.csv", data_dir.to_str().unwrap()))
-                    .await
-                    .map_err(|err| format!("Failed to save input: {err}"))?;
-
-                return Ok(Some(file_name.to_string_lossy().into_owned()));
+                return Ok(Some(File {
+                    name: file_name,
+                    path: file_path.to_string_lossy().into_owned(),
+                }));
             }
 
             Ok(None)
-        },
+        }
         "heavyWaterInputData" => {
             let file_path = FileDialogBuilder::new()
+                .add_filter("Heavy Water File", &vec!["txt"])
                 .pick_file();
 
             if let Some(file_path) = file_path {
-                let file_name = file_path.file_name().unwrap();
+                let file_name = file_path
+                    .file_name()
+                    .unwrap()
+                    .to_string_lossy()
+                    .into_owned();
 
-                fs::copy(&file_path, format!("{}/HeavyWater_Data.txt", data_dir.to_str().unwrap()))
-                    .await
-                    .map_err(|err| format!("Failed to save input: {err}"))?;
-
-                return Ok(Some(file_name.to_string_lossy().into_owned()));
+                return Ok(Some(File {
+                    name: file_name,
+                    path: file_path.to_string_lossy().into_owned(),
+                }));
             }
 
             Ok(None)
@@ -73,43 +90,31 @@ pub async fn select_data(app_handle: tauri::AppHandle, data_input_type: String) 
 }
 
 #[tauri::command]
-pub async fn process_data(app_handle: tauri::AppHandle) -> Result<(), String> {
-    let data_dir = app_handle.path_resolver().app_local_data_dir().unwrap().join("data");
-    let dependencies_dir = app_handle.path_resolver().app_local_data_dir().unwrap().join("dependencies");
+pub async fn process_data(
+    app_handle: tauri::AppHandle,
+    should_remove_na_calculations: bool,
+    input_file_path: String,
+    heavy_water_file_path: String,
+) -> Result<(), String> {
+    let data_dir = app_handle
+        .path_resolver()
+        .app_local_data_dir()
+        .unwrap()
+        .join("data");
+    let dependencies_dir = app_handle
+        .path_resolver()
+        .app_local_data_dir()
+        .unwrap()
+        .join("dependencies");
+    let input_file_path = Path::new(&input_file_path);
+    let heavy_water_file_path = Path::new(&heavy_water_file_path);
 
-    let mut command = tokio::process::Command::new(format!(
-        "{}/SRM_Rate.exe",
-        dependencies_dir.to_str().unwrap()
-    ));
-    command.arg(format!(
-        "{}/HeavyWater_Data.txt",
-        data_dir.to_str().unwrap()
-    ));
-    command.arg(format!("{}/Data.csv", data_dir.to_str().unwrap()));
-    // additional context here: https://stackoverflow.com/questions/60750113/how-do-i-hide-the-console-window-for-a-process-started-with-stdprocesscomman
-    // CREATE_NO_WINDOW flag. See: https://learn.microsoft.com/en-us/windows/win32/procthread/process-creation-flags#CREATE_NO_WINDOW
-    // CREATE_NO_WINDOW comes at a disadvantage of not being able to read the output of the process. DETACHED_PROCESS can be used instead if output is needed.
-    command.creation_flags(0x08000000);
+    crate::processor::process_data(
+        &data_dir,
+        &dependencies_dir,
+        &input_file_path,
+        &heavy_water_file_path,
+    ).await?;
 
-    let output = command
-        .output()
-        .await
-        .map_err(|err| format!("Failed to run command: {err}"))?;
-
-    if output.status.success() {
-        let file_path = FileDialogBuilder::new()
-            .set_file_name("Data.RateConst.csv")
-            .add_filter("Output CSV File", &vec!["csv"])
-            .save_file();
-
-        if let Some(file_path) = file_path {
-            fs::copy(format!("{}/Data.RateConst.csv", data_dir.to_str().unwrap()), file_path)
-                .await
-                .map_err(|err| format!("Failed to save output: {err}"))?;
-        }
-
-        Ok(())
-    } else {
-        Err("The command exited with non-zero status".to_string())
-    }
+    Ok(())
 }

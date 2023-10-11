@@ -26,17 +26,15 @@
       "fs": {
         "all": false,
         "copyFile": false,
-        "createDir": true,
-        "exists": true,
+        "createDir": false,
+        "exists": false,
         "readDir": false,
         "readFile": false,
         "removeDir": false,
         "removeFile": false,
         "renameFile": false,
-        "scope": [
-          "$APPLOCALDATA/**/*"
-        ],
-        "writeFile": true
+        "scope": [],
+        "writeFile": false
       }
     },
     "bundle": {

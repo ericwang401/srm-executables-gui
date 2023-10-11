@@ -1,6 +1,6 @@
 {
 	"name": "srm-executables-gui",
-	"version": "0.0.1",
+	"version": "canary",
 	"private": true,
 	"scripts": {
 		"dev": "vite dev",

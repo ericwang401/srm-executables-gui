@@ -75,7 +75,7 @@ checksum = "a4668cab20f66d8d020e1fbc0ebe47217433c1b6c8f2040faf858554e394ace6"
 
 [[package]]
 name = "app"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "reqwest",
  "serde",
@@ -83,6 +83,7 @@ dependencies = [
  "tauri",
  "tauri-build",
  "tokio",
+ "uuid",
  "zip-extract",
 ]
 
@@ -3547,6 +3548,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "79daa5ed5740825c40b389c5e50312b9c86df53fccd33f281df655642b43869d"
 dependencies = [
  "getrandom 0.2.10",
+ "rand 0.8.5",
 ]
 
 [[package]]
