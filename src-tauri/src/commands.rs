@@ -109,12 +109,5 @@ pub async fn process_data(
     let input_file_path = Path::new(&input_file_path);
     let heavy_water_file_path = Path::new(&heavy_water_file_path);
 
-    crate::processor::process_data(
-        &data_dir,
-        &dependencies_dir,
-        &input_file_path,
-        &heavy_water_file_path,
-    ).await?;
-
     Ok(())
 }
