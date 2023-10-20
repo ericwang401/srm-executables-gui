@@ -15,18 +15,52 @@ pub async fn handle(
 ) -> Result<(), String> {
     prepare_data_folder(data_dir).await?;
 
-    let (input_file_path, _, _) =
+    let (input_file_path, heavy_water_file_path, input_file_uuid, heavy_water_file_uuid) =
         copy_input_files(data_dir, input_file_path, heavy_water_file_path).await?;
     let input_file_contents = fs::read(&input_file_path).await.unwrap();
+    let heavy_water_contents = fs::read_to_string(&heavy_water_file_path).await.unwrap();
 
-    let peptides_with_na_samples = get_peptides_with_na_samples(&input_file_contents)?;
+    let master_output_file = process_data(
+        dependencies_dir,
+        data_dir,
+        &input_file_path,
+        &heavy_water_file_path,
+        Some((&input_file_uuid, &heavy_water_file_uuid)),
+    )
+    .await?;
+    let mut master_output_contents = fs::read(&master_output_file).await.unwrap();
 
+    if (should_remove_na_calculations) {
+        let peptides_with_na_samples = get_peptides_with_na_samples(&input_file_contents)?;
 
-    if let Some((peptide, na_samples)) = peptides_with_na_samples.iter().next() {
-        isolate_peptide_into_new_csv(&data_dir, &input_file_contents, peptide, na_samples)?;
+        let mut peptide_files: Vec<(PathBuf, Uuid)> = Vec::new();
+        for (peptide, na_samples) in peptides_with_na_samples.iter() {
+            peptide_files.push(isolate_peptide_into_new_csv(
+                &data_dir,
+                &input_file_contents,
+                peptide,
+                na_samples,
+            )?);
+        }
+
+        let mut peptide_output_files: Vec<PathBuf> = Vec::new();
+        for (peptide_file_path, peptide_file_uuid) in peptide_files.iter() {
+            peptide_output_files.push(
+                process_data(
+                    dependencies_dir,
+                    data_dir,
+                    peptide_file_path,
+                    &heavy_water_file_path,
+                    Some((peptide_file_uuid, &heavy_water_file_uuid)),
+                )
+                .await?,
+            );
+        }
+
+        for peptide_output_file in peptide_output_files.iter() {
+            stitch_into_master_output(&mut master_output_contents, peptide_output_file)?;
+        }
     }
-
-    dbg!(peptides_with_na_samples);
 
     Ok(())
 }
@@ -36,14 +70,17 @@ async fn process_data(
     data_dir: &Path,
     input_file_path: &Path,
     heavy_water_file_path: &Path,
-    uuid: Option<Uuid>,
+    uuid: Option<(&Uuid, &Uuid)>, // 1st=input file uuid; 2nd=heavy water file uuid
 ) -> Result<PathBuf, String> {
-    let (input_file_path, heavy_water_file_path, input_file_uuid) = match uuid {
-        Some(id) => (
-            data_dir.join(format!("{}.input", id)),
-            data_dir.join(format!("{}.heavy", id)),
-            id,
-        ),
+    let (input_file_path, heavy_water_file_path, input_file_uuid, heavy_water_file_uuid) = match uuid {
+        Some((input_id, heavy_id)) => {
+            (
+                data_dir.join(format!("{input_id}.csv")),
+                data_dir.join(format!("{heavy_id}.txt")),
+                input_id.to_owned(),
+                heavy_id.to_owned(),
+            )
+        },
         None => copy_input_files(data_dir, input_file_path, heavy_water_file_path).await?,
     };
 
@@ -53,7 +90,6 @@ async fn process_data(
         .arg(input_file_path.to_str().unwrap())
         // additional context here: https://stackoverflow.com/questions/60750113/how-do-i-hide-the-console-window-for-a-process-started-with-stdprocesscomman
         // CREATE_NO_WINDOW flag. See: https://learn.microsoft.com/en-us/windows/win32/procthread/process-creation-flags#CREATE_NO_WINDOW
-        // CREATE_NO_WINDOW comes at a disadvantage of not being able to read the output of the process. DETACHED_PROCESS can be used instead if output is needed.
         .creation_flags(0x08000000);
 
     let output = command
@@ -64,18 +100,55 @@ async fn process_data(
     if output.status.success() {
         Ok(data_dir.join(format!("{input_file_uuid}.RateConst.csv")))
     } else {
+        // dump command output
+        dbg!(output);
         Err("The command didn't complete successfully".to_string())
     }
+}
+
+fn stitch_into_master_output(
+    mut master_output_contents: &mut Vec<u8>,
+    peptide_output_file: &Path,
+) -> Result<(), String> {
+    let mut master_reader = ReaderBuilder::new()
+        .has_headers(false) // this is to prevent the first row from being separated from the rest of the spreadsheet when we are trying to take the first 7 rows
+        .from_reader(Cursor::new(master_output_contents.clone()));
+    let mut master_writer = WriterBuilder::new()
+        .flexible(true) // NEEDED to write records with varying number of fields (https://docs.rs/csv/latest/csv/struct.WriterBuilder.html#method.flexible)
+        .from_writer(&mut master_output_contents);
+    let mut peptide_reader = ReaderBuilder::new()
+        .has_headers(false)
+        .from_path(peptide_output_file)
+        .map_err(|err| format!("Failed to create CSV reader: {}", err))?;
+
+    let master_header: StringRecord = master_reader
+        .records()
+        .nth(6)
+        .unwrap()
+        .map_err(|err| format!("Failed to read record: {}", err))?;
+
+    let peptide_header: StringRecord = peptide_reader
+        .records()
+        .nth(6)
+        .unwrap()
+        .map_err(|err| format!("Failed to read record: {}", err))?;
+
+    for result in peptide_reader.records() {
+        dbg!(result);
+    }
+
+    Ok(())
 }
 
 async fn copy_input_files(
     data_dir: &Path,
     input_file_path: &Path,
     heavy_water_file_path: &Path,
-) -> Result<(PathBuf, PathBuf, Uuid), String> {
+) -> Result<(PathBuf, PathBuf, Uuid, Uuid), String> {
     let input_file_uuid = Uuid::new_v4();
+    let heavy_water_file_uuid = Uuid::new_v4();
     let new_input_file_path = data_dir.join(format!("{input_file_uuid}.csv"));
-    let new_heavy_water_file_path = data_dir.join(format!("{}.txt", Uuid::new_v4()));
+    let new_heavy_water_file_path = data_dir.join(format!("{heavy_water_file_uuid}.txt"));
 
     fs::copy(input_file_path, &new_input_file_path)
         .await
@@ -89,6 +162,7 @@ async fn copy_input_files(
         new_input_file_path,
         new_heavy_water_file_path,
         input_file_uuid,
+        heavy_water_file_uuid,
     ))
 }
 
@@ -147,7 +221,7 @@ fn isolate_peptide_into_new_csv<C: AsRef<Vec<u8>>, P: AsRef<str>, N: AsRef<[u32]
     csv_contents: C,
     peptide: P,
     na_samples: N,
-) -> Result<(PathBuf, Uuid), String> {
+) -> Result<(PathBuf, Uuid, Uuid), String> {
     let output_file_uuid = Uuid::new_v4();
     let output_file_name = data_dir.join(format!("{output_file_uuid}.csv"));
 
@@ -155,7 +229,7 @@ fn isolate_peptide_into_new_csv<C: AsRef<Vec<u8>>, P: AsRef<str>, N: AsRef<[u32]
         .has_headers(false) // this is to prevent the first row from being separated from the rest of the spreadsheet when we are trying to take the first 7 rows
         .from_reader(Cursor::new(csv_contents.as_ref()));
     let mut writer = WriterBuilder::new()
-        .flexible(true) // NEEDED to write records with different number of fields (https://docs.rs/csv/latest/csv/struct.WriterBuilder.html#method.flexible)
+        .flexible(true) // NEEDED to write records with varying number of fields (https://docs.rs/csv/latest/csv/struct.WriterBuilder.html#method.flexible)
         .from_path(&output_file_name)
         .map_err(|err| format!("Failed to create CSV writer: {}", err))?;
 
