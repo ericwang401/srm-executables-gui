@@ -32,7 +32,7 @@ pub async fn copy_input_files(
     ))
 }
 
-pub async fn prepare_data_folder(data_dir: &Path) -> Result<(), String> {
+pub async fn clear_data_folder(data_dir: &Path) -> Result<(), String> {
     if data_dir.exists() {
         fs::remove_dir_all(&data_dir).await.map_err(|err| {
             format!(

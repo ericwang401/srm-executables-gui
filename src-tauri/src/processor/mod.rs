@@ -1,7 +1,7 @@
 use crate::processor::{
     aggregator::aggregate,
     executor::execute,
-    helpers::{copy_input_files, prepare_data_folder},
+    helpers::{copy_input_files, clear_data_folder},
     peptide_isolator::{get_na_peptides, isolate},
 };
 use csv::{Reader, ReaderBuilder, StringRecord, WriterBuilder};
@@ -23,8 +23,8 @@ pub async fn handle(
     dependencies_dir: &Path,
     input_file_path: &Path,
     heavy_water_file_path: &Path,
-) -> Result<(), String> {
-    prepare_data_folder(data_dir).await?;
+) -> Result<Vec<u8>, String> {
+    clear_data_folder(data_dir).await?;
 
     let (input_file_path, heavy_water_file_path, input_file_uuid, heavy_water_file_uuid) =
         copy_input_files(data_dir, input_file_path, heavy_water_file_path).await?;
@@ -44,20 +44,36 @@ pub async fn handle(
     if (should_remove_na_calculations) {
         let peptides_with_na_samples = get_na_peptides(&input_file_contents)?;
 
-        let mut peptide_files: Vec<(PathBuf, Uuid, PathBuf, Uuid)> = Vec::new();
+        let mut peptide_files: Vec<(PathBuf, Uuid, PathBuf, Uuid, u32)> = Vec::new();
         for (peptide, na_samples) in peptides_with_na_samples.iter() {
-            peptide_files.push(isolate(
+            let (input_path, input_uuid, heavy_path, heavy_uuid) = isolate(
                 &data_dir,
                 &input_file_contents,
                 &heavy_water_contents,
                 peptide,
-                na_samples,
-            )?);
+                &na_samples,
+            )
+            .await?;
+
+            peptide_files.push((
+                input_path,
+                input_uuid,
+                heavy_path,
+                heavy_uuid,
+                na_samples.len() as u32,
+            ));
         }
 
-        let mut peptide_output_files: Vec<PathBuf> = Vec::new();
-        for (input_file_path, input_file_uuid, heavy_water_path, heavy_water_uuid) in peptide_files.iter() {
-            peptide_output_files.push(
+        let mut peptide_output_files: Vec<(PathBuf, u32)> = Vec::new();
+        for (
+            input_file_path,
+            input_file_uuid,
+            heavy_water_path,
+            heavy_water_uuid,
+            samples_omitted,
+        ) in peptide_files.iter()
+        {
+            peptide_output_files.push((
                 execute(
                     dependencies_dir,
                     data_dir,
@@ -66,13 +82,16 @@ pub async fn handle(
                     Some((input_file_uuid, heavy_water_uuid)),
                 )
                 .await?,
-            );
+                samples_omitted.to_owned(),
+            ));
         }
 
-        for peptide_output_file in peptide_output_files.iter() {
-            aggregate(&mut master_output_contents, peptide_output_file)?;
+        for (peptide_output_file, samples_omitted,) in peptide_output_files.iter() {
+            aggregate(&mut master_output_contents, peptide_output_file, samples_omitted)?;
         }
     }
 
-    Ok(())
+    clear_data_folder(data_dir).await?;
+
+    Ok(master_output_contents)
 }

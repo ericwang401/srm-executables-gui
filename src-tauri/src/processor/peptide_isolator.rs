@@ -2,11 +2,11 @@ use csv::{Reader, ReaderBuilder, StringRecord, WriterBuilder};
 use std::collections::HashMap;
 use std::io::Cursor;
 use std::path::{Path, PathBuf};
-use tokio::fs;
-use tokio::process::Command;
+use tokio::fs::File;
+use tokio::io::{self, AsyncWriteExt};
 use uuid::Uuid;
 
-pub fn isolate<C: AsRef<Vec<u8>>, H: AsRef<str>, P: AsRef<str>, N: AsRef<[u32]>>(
+pub async fn isolate<C: AsRef<Vec<u8>>, H: AsRef<str>, P: AsRef<str>, N: AsRef<[u32]>>(
     data_dir: &Path,
     csv_contents: C,
     heavy_water_contents: H,
@@ -69,7 +69,39 @@ pub fn isolate<C: AsRef<Vec<u8>>, H: AsRef<str>, P: AsRef<str>, N: AsRef<[u32]>>
         .flush()
         .map_err(|err| format!("Failed to flush CSV writer: {}", err))?;
 
-    Ok((input_file_path, input_file_uuid, heavy_water_file_path, heavy_water_uuid))
+    // iterate over every single line of heavy_water_contents
+    // skipping the first line, pluck out the index of the line that contains the peptide of interest
+    // write that line to the new heavy water file
+    let mut heavy_water_writer = File::create(&heavy_water_file_path)
+        .await
+        .map_err(|err| format!("Failed to create heavy water file: {}", err))?;
+
+    for (index, line) in heavy_water_contents.as_ref().lines().enumerate() {
+        if index == 0 {
+            heavy_water_writer.write_all(line.as_bytes()).await.unwrap();
+            continue;
+        }
+
+        if na_samples.as_ref().contains(&((index + 2) as u32)) {
+            continue;
+        }
+
+        heavy_water_writer
+            .write_all(b"\n")
+            .await
+            .unwrap();
+        heavy_water_writer
+            .write_all(line.as_bytes())
+            .await
+            .unwrap();
+    }
+
+    Ok((
+        input_file_path,
+        input_file_uuid,
+        heavy_water_file_path,
+        heavy_water_uuid,
+    ))
 }
 
 pub fn get_na_peptides<T: AsRef<Vec<u8>>>(
@@ -87,16 +119,16 @@ pub fn get_na_peptides<T: AsRef<Vec<u8>>>(
     for result in reader.records() {
         let record = result.map_err(|err| format!("Failed to read record: {err}"))?;
         let peptide = record.get(1).unwrap();
-        let mut na_samples: Vec<u32> = Vec::new();
+        let na_samples = peptides.entry(peptide.to_string()).or_insert(Vec::new());
 
         for (index, value) in record.iter().enumerate() {
-            if index > 2 && value == "#N/A" {
+            if index > 2 && value == "#N/A" && !na_samples.contains(&(index as u32)) {
                 na_samples.push(index as u32);
             }
         }
 
-        if na_samples.len() > 0 {
-            peptides.insert(peptide.to_string(), na_samples);
+        if na_samples.len() == 0 {
+            peptides.remove(peptide);
         }
     }
 
