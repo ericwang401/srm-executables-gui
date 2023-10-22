@@ -4,12 +4,12 @@ use crate::processor::{
     helpers::{copy_input_files, clear_data_folder},
     peptide_isolator::{get_na_peptides, isolate},
 };
-use csv::{Reader, ReaderBuilder, StringRecord, WriterBuilder};
-use std::collections::HashMap;
-use std::io::Cursor;
+
+
+
 use std::path::{Path, PathBuf};
 use tokio::fs;
-use tokio::process::Command;
+
 use uuid::Uuid;
 
 mod aggregator;
@@ -41,7 +41,7 @@ pub async fn handle(
     .await?;
     let mut master_output_contents = fs::read(&master_output_file).await.unwrap();
 
-    if (should_remove_na_calculations) {
+    if should_remove_na_calculations {
         let peptides_with_na_samples = get_na_peptides(&input_file_contents)?;
 
         let mut peptide_files: Vec<(PathBuf, Uuid, PathBuf, Uuid, u32)> = Vec::new();
