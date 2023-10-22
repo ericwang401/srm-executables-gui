@@ -1,6 +1,6 @@
 <h1><img src="https://github.com/ericwang401/srm-executables-gui/assets/37554696/15efa103-d05c-4808-9fe1-afb4837a2a8f" height="30"/> SRM Executables GUI</h1>
 
-<img src="https://i.imgur.com/wIEisIH.png" width="500" />
+<img src="https://i.imgur.com/l0x3txH.png" width="500" />
 
 A GUI for <a href="https://github.com/rgsadygov/SRM_executables">SRM Executables</a>, which is a command-line utility. Internally, this GUI is not a rewrite of SRM executables; it is a wrapper over the command-line interface, and a command is still executed.
 
