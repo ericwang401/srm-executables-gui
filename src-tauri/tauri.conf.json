@@ -44,7 +44,7 @@
     },
     "bundle": {
       "active": true,
-      "category": "DeveloperTool",
+      "category": "Utility",
       "copyright": "",
       "deb": {
         "depends": []
@@ -58,7 +58,8 @@
         "icons/icon.ico"
       ],
       "identifier": "com.performave.srm-executables",
-      "longDescription": "",
+      "publisher": "Eric Wang",
+      "longDescription": "A utility that calculates the synthesis rates of specific proteins.",
       "macOS": {
         "entitlements": null,
         "exceptionDomain": "",
@@ -67,7 +68,7 @@
         "signingIdentity": null
       },
       "resources": [],
-      "shortDescription": "",
+      "shortDescription": "Protein synthesis rate calculator",
       "targets": "all",
       "windows": {
         "certificateThumbprint": null,
