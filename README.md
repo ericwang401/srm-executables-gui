@@ -15,7 +15,7 @@ Downloads are available in the releases section in the right side of your screen
 
 ## Development
 
-Once you've cloned this project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+Once you've cloned this project and installed dependencies with `npm install`, start a development server:
 
 ```bash
 npm run tauri dev
