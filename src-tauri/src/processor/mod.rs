@@ -16,6 +16,7 @@ mod aggregator;
 mod executor;
 mod helpers;
 mod peptide_isolator;
+mod parser;
 
 pub async fn handle(
     should_remove_na_calculations: bool,
