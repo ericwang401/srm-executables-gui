@@ -29,10 +29,10 @@ pub async fn execute(
     let mut command = Command::new(dependencies_dir.join("SRM_Rate.exe"));
     command
         .arg(heavy_water_file_path.to_str().unwrap())
-        .arg(input_file_path.to_str().unwrap())
+        .arg(input_file_path.to_str().unwrap());
         // additional context here: https://stackoverflow.com/questions/60750113/how-do-i-hide-the-console-window-for-a-process-started-with-stdprocesscomman
         // CREATE_NO_WINDOW flag. See: https://learn.microsoft.com/en-us/windows/win32/procthread/process-creation-flags#CREATE_NO_WINDOW
-        .creation_flags(0x08000000);
+        //.creation_flags(0x08000000);
 
     let output = command
         .output()

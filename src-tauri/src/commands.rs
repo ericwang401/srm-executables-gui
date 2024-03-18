@@ -6,6 +6,7 @@ use std::io::Cursor;
 use std::path::Path;
 use tauri::api::dialog::blocking::FileDialogBuilder;
 use tokio::fs;
+use crate::processor::parser::parse;
 
 #[tauri::command]
 pub async fn install_dependencies(app_handle: tauri::AppHandle) -> Result<(), String> {
@@ -110,38 +111,40 @@ pub async fn process_data(
     let input_file_path = Path::new(&input_file_path);
     let heavy_water_file_path = Path::new(&heavy_water_file_path);
 
-    let output_contents = processor::handle(
-        should_remove_na_calculations,
-        &data_dir,
-        &dependencies_dir,
-        &input_file_path,
-        heavy_water_file_path,
-    )
-    .await?;
+    dbg!(parse(input_file_path).await.unwrap());
 
-    let input_file_name = input_file_path
-        .file_stem()
-        .unwrap()
-        .to_string_lossy()
-        .into_owned();
-
-    let file_path = FileDialogBuilder::new()
-            .set_file_name(&format!("{input_file_name}.RateConst.csv"))
-            .add_filter("Output CSV File", &vec!["csv"])
-            .save_file();
-
-    if let Some(file_path) = file_path {
-        // overwrite file if it already exists
-        fs::OpenOptions::new()
-            .write(true)
-            .create(true)
-            .open(&file_path)
-            .await
-            .map_err(|err| format!("Failed to write output file: {err}"))?
-            .write(&output_contents)
-            .await
-            .map_err(|err| format!("Failed to write output file: {err}"))?;
-    }
+    // let output_contents = processor::handle(
+    //     should_remove_na_calculations,
+    //     &data_dir,
+    //     &dependencies_dir,
+    //     &input_file_path,
+    //     heavy_water_file_path,
+    // )
+    // .await?;
+    //
+    // let input_file_name = input_file_path
+    //     .file_stem()
+    //     .unwrap()
+    //     .to_string_lossy()
+    //     .into_owned();
+    //
+    // let file_path = FileDialogBuilder::new()
+    //         .set_file_name(&format!("{input_file_name}.RateConst.csv"))
+    //         .add_filter("Output CSV File", &vec!["csv"])
+    //         .save_file();
+    //
+    // if let Some(file_path) = file_path {
+    //     // overwrite file if it already exists
+    //     fs::OpenOptions::new()
+    //         .write(true)
+    //         .create(true)
+    //         .open(&file_path)
+    //         .await
+    //         .map_err(|err| format!("Failed to write output file: {err}"))?
+    //         .write(&output_contents)
+    //         .await
+    //         .map_err(|err| format!("Failed to write output file: {err}"))?;
+    // }
 
     Ok(())
 }
