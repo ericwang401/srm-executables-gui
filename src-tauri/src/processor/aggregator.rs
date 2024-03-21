@@ -1,10 +1,7 @@
-use csv::{ReaderBuilder, WriterBuilder};
-
 use std::io::Cursor;
-use std::path::{Path};
+use std::path::Path;
 
-
-
+use csv::{ReaderBuilder, WriterBuilder};
 
 // stitches the isolated peptide results back into the master output file
 pub fn aggregate(

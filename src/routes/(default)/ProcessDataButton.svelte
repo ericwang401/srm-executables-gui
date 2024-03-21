@@ -2,7 +2,7 @@
     import { Button } from '$lib/components/ui/button'
     import { invoke } from '@tauri-apps/api/tauri'
     import { toast } from 'svelte-sonner'
-    import { inputFile, heavyWaterFile, shouldRemoveNACalculations } from './InputDataCard.svelte'
+    import { inputFile, shouldRemoveNACalculations } from './InputDataCard.svelte'
     import * as Tooltip from '$lib/components/ui/tooltip'
 
     let loading = false
@@ -11,8 +11,7 @@
         loading = true
         try {
             await invoke('process_data', {
-                inputFilePath: $inputFile?.path,
-                heavyWaterFilePath: $heavyWaterFile?.path,
+                inputFilePath: $inputFile,
                 shouldRemoveNaCalculations: $shouldRemoveNACalculations,
             })
 
@@ -29,7 +28,7 @@
 </script>
 
 <div class="flex justify-end pb-4">
-    {#if Boolean($inputFile) && Boolean($heavyWaterFile)}
+    {#if $inputFile}
         <Button {loading} on:click={processData}>Process data</Button>
     {:else}
         <Tooltip.Root openDelay={0}>

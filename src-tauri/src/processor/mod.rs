@@ -1,22 +1,19 @@
+use std::path::{Path, PathBuf};
+
+use tokio::fs;
+use uuid::Uuid;
+
 use crate::processor::{
     aggregator::aggregate,
     executor::execute,
-    helpers::{copy_input_files, clear_data_folder},
+    helpers::{clear_data_folder, copy_input_files},
     peptide_isolator::{get_na_peptides, isolate},
 };
-
-
-
-use std::path::{Path, PathBuf};
-use tokio::fs;
-
-use uuid::Uuid;
 
 mod aggregator;
 mod executor;
 mod helpers;
 mod peptide_isolator;
-pub mod parser;
 
 pub async fn handle(
     should_remove_na_calculations: bool,

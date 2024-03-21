@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+
 use crate::parser::Peptide;
 
 #[derive(Debug, Clone)]
@@ -7,7 +8,7 @@ pub struct PeptideGroup {
     pub na_columns: Vec<bool>,
 }
 
-pub fn group_by_peptides(peptides: Vec<Peptide>) -> (Vec<PeptideGroup>, Vec<NAGroup>) {
+pub fn group_by_peptides(peptides: Vec<Peptide>) -> Vec<PeptideGroup> {
     let mut sorted_peptides = peptides;
     sorted_peptides.sort_by(|a, b| {
         a.name.cmp(&b.name).then_with(|| {
@@ -16,7 +17,6 @@ pub fn group_by_peptides(peptides: Vec<Peptide>) -> (Vec<PeptideGroup>, Vec<NAGr
     });
 
     let mut groups: Vec<PeptideGroup> = Vec::new();
-    let mut separated_groups: Vec<NAGroup> = Vec::new();
     let mut current_group: Vec<Peptide> = Vec::new();
 
     for peptide in sorted_peptides {
@@ -29,11 +29,7 @@ pub fn group_by_peptides(peptides: Vec<Peptide>) -> (Vec<PeptideGroup>, Vec<NAGr
             if (peptide.mass_charge_ratio - last_ratio).abs() < threshold {
                 current_group.push(peptide);
             } else {
-                let peptide_group = create_peptide_group(&current_group);
-                separated_groups.push(NAGroup {
-                    groups: vec![peptide_group.clone()],
-                    na_columns: peptide_group.na_columns.clone()
-                });
+                groups.push(create_peptide_group(&current_group));
                 current_group = vec![peptide];
             }
         } else {
@@ -47,7 +43,7 @@ pub fn group_by_peptides(peptides: Vec<Peptide>) -> (Vec<PeptideGroup>, Vec<NAGr
         groups.push(create_peptide_group(&current_group));
     }
 
-    (groups, separated_groups)
+    groups
 }
 
 
@@ -62,7 +58,7 @@ fn dynamic_threshold(peptides: &[Peptide]) -> f64 {
         .sum::<f64>() / (peptides.len() - 1) as f64;
     let std_deviation = variance.sqrt();
 
-    std_deviation // You might want to scale this value based on your data.
+    std_deviation * 2.0 // You might want to scale this value based on your data.
 }
 
 
@@ -85,22 +81,38 @@ fn create_peptide_group(peptides: &[Peptide]) -> PeptideGroup {
 
 #[derive(Debug, Clone)]
 pub struct NAGroup {
-    pub groups: Vec<PeptideGroup>,
+    pub peptides: Vec<Peptide>,
     pub na_columns: Vec<bool>,
 }
 
 pub fn group_by_na_columns(groups: Vec<PeptideGroup>) -> Vec<NAGroup> {
-    let mut na_groups: HashMap<Vec<bool>, Vec<PeptideGroup>> = HashMap::new();
+    let mut na_groups: HashMap<(Vec<bool>, u64), Vec<Peptide>> = HashMap::new();
 
-    // Group peptide groups by similar na_columns
     for group in groups {
-        na_groups.entry(group.na_columns.clone())
-            .or_insert_with(Vec::new)
-            .push(group);
+        let mut count = 1;
+        loop {
+            let key = (group.na_columns.clone(), count);
+            if let Some(peptide_group) = na_groups.get(&key) {
+                let name = group.peptides[0].name.clone();
+
+                if let Some(_) = peptide_group.iter().find(|&x| x.name == name) {
+                    count += 1;
+                } else {
+                    na_groups.entry(key).or_insert_with(Vec::new).extend(group.peptides);
+                    break;
+                }
+            } else {
+                na_groups.insert(key, group.peptides);
+                break;
+            }
+        }
     }
 
     // Convert each group into a NAGroup with na_columns computed
-    na_groups.into_iter().map(|(na_columns, groups)| {
-        NAGroup { groups, na_columns }
+    na_groups.iter().map(|((na_cols, _), peptides)| {
+        NAGroup {
+            peptides: peptides.to_vec(),
+            na_columns: na_cols.to_vec(),
+        }
     }).collect()
 }

@@ -1,10 +1,8 @@
 use std::io::Cursor;
 use std::path::Path;
+
 use csv::{Reader, ReaderBuilder};
 use tokio::fs;
-use tokio::fs::File;
-use tokio::io::{AsyncSeekExt, AsyncWriteExt};
-
 
 pub type Day = u64;
 
@@ -12,11 +10,11 @@ pub type Mouse = String;
 
 pub type Label = String;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Peptide {
     pub name: String,
     pub protein: String,
-    pub charge_mass_ratio: f64,
+    pub mass_charge_ratio: f64,
     pub intensities: Vec<Option<u64>>,
 }
 
@@ -40,10 +38,10 @@ pub async fn parse(spreadsheet: &Path)
 fn extract_peptides(rdr: &mut Reader<Cursor<Vec<u8>>>) -> Result<Vec<Peptide>, Box<dyn std::error::Error>> {
     let mut peptides = vec![];
 
-    for result in rdr.records().skip(1) {
+    for result in rdr.records() {
         let record = result?;
-        let name = record[0].to_string();
-        let protein = record[1].to_string();
+        let protein = record[0].to_string();
+        let name = record[1].to_string();
         let charge_mass_ratio = record[2].parse::<f64>()?;
         let intensities = record.iter().skip(3).map(|value| {
             if value == "#N/A" {
@@ -57,7 +55,7 @@ fn extract_peptides(rdr: &mut Reader<Cursor<Vec<u8>>>) -> Result<Vec<Peptide>, B
         peptides.push(Peptide {
             name,
             protein,
-            charge_mass_ratio,
+            mass_charge_ratio: charge_mass_ratio,
             intensities,
         });
     }
