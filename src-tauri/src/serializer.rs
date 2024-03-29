@@ -224,7 +224,7 @@ pub fn serialize_calculations(path: &Path, calculations: &Vec<Calculation>) -> R
         let samples_omitted = if calculation.samples_omitted == 0 {
             "".to_string()
         } else {
-            format!("{} sample{}", calculation.samples_omitted, if calculation.samples_omitted > 1 { "s" } else { "" })
+            format!("{} sample{} omitted", calculation.samples_omitted, if calculation.samples_omitted > 1 { "s" } else { "" })
         };
 
         wtr.write_record(&[
