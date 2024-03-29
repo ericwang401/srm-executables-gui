@@ -1,10 +1,10 @@
-use std::env::temp_dir;
 use std::io::Cursor;
 use std::path::Path;
 
 use reqwest::Client;
 use tauri::api::dialog::blocking::FileDialogBuilder;
 use tokio::fs;
+use tokio::fs::create_dir;
 use crate::aggregator::aggregate;
 use crate::analyzer::analyze;
 
@@ -51,6 +51,7 @@ pub async fn process_data(
 ) -> Result<(), String> {
     let temp_dir = tempfile::tempdir().map_err(|e| e.to_string())?;
     let data_dir = temp_dir.path().join("data");
+    create_dir(&data_dir).await.map_err(|e| e.to_string())?;
     dbg!(temp_dir.path());
     let dependencies_dir = app_handle
         .path_resolver()
