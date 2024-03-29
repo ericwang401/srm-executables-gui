@@ -78,7 +78,13 @@ async fn serialize_heavy_water_file(path: &Path, days: &Vec<Day>, labels: &Vec<L
     // Write each day and label to the file
     for (day, label) in days.iter().zip(labels.iter()) {
         // Check if the label is numeric and replace non-numeric labels with "0"
-        let numeric_label = label.parse::<u64>().map_or("0", |_| label);
+        let numeric_label = if label.parse::<f64>().is_ok() {
+            label
+        } else if label.parse::<i64>().is_ok() {
+            label
+        } else {
+            "0"
+        };
         file.write_all(&format!("{}, {}\n", day, numeric_label).into_bytes()).await?;
     }
 
