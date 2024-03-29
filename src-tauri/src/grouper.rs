@@ -8,7 +8,7 @@ pub struct PeptideGroup {
     pub na_columns: Vec<bool>,
 }
 
-pub fn group_by_peptides(peptides: Vec<Peptide>) -> Vec<PeptideGroup> {
+pub fn group_by_peptides(tolerance_multiplier: f64, peptides: Vec<Peptide>) -> Vec<PeptideGroup> {
     let mut sorted_peptides = peptides;
     sorted_peptides.sort_by(|a, b| {
         a.name.cmp(&b.name).then_with(|| {
@@ -24,7 +24,7 @@ pub fn group_by_peptides(peptides: Vec<Peptide>) -> Vec<PeptideGroup> {
             current_group.push(peptide);
         } else if peptide.name == current_group.last().unwrap().name {
             // Dynamically determine the threshold based on the current group
-            let threshold = dynamic_threshold(&current_group);
+            let threshold = calc_std_deviation(&current_group) * tolerance_multiplier;
             let last_ratio = current_group.last().unwrap().mass_charge_ratio;
             if (peptide.mass_charge_ratio - last_ratio).abs() < threshold {
                 current_group.push(peptide);
@@ -47,7 +47,7 @@ pub fn group_by_peptides(peptides: Vec<Peptide>) -> Vec<PeptideGroup> {
 }
 
 
-fn dynamic_threshold(peptides: &[Peptide]) -> f64 {
+fn calc_std_deviation(peptides: &[Peptide]) -> f64 {
     if peptides.len() <= 1 {
         return f64::INFINITY; // If there's only one peptide, no need for a threshold.
     }

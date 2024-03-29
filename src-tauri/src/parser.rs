@@ -21,10 +21,10 @@ pub struct Peptide {
 pub async fn parse(spreadsheet: &Path)
                    -> Result<
                        (Vec<Day>, Vec<Mouse>, Vec<Label>, Vec<Peptide>),
-                       Box<dyn std::error::Error>
+                       String
                    >
 {
-    let contents = fs::read(spreadsheet).await?;
+    let contents = fs::read(spreadsheet).await.map_err(|_| "Failed to read file")?;
     let mut rdr = ReaderBuilder::new()
         .has_headers(false)
         .from_reader(Cursor::new(contents));
@@ -35,14 +35,14 @@ pub async fn parse(spreadsheet: &Path)
     Ok((days, mice, labels, peptides))
 }
 
-fn extract_peptides(rdr: &mut Reader<Cursor<Vec<u8>>>) -> Result<Vec<Peptide>, Box<dyn std::error::Error>> {
+fn extract_peptides(rdr: &mut Reader<Cursor<Vec<u8>>>) -> Result<Vec<Peptide>, String> {
     let mut peptides = vec![];
 
     for result in rdr.records() {
-        let record = result?;
+        let record = result.map_err(|_| "Failed to read row from spreadsheet")?;
         let protein = record[0].to_string();
         let name = record[1].to_string();
-        let charge_mass_ratio = record[2].parse::<f64>()?;
+        let charge_mass_ratio = record[2].parse::<f64>().map_err(|_| "Failed to parse charge/mass ratio")?;
         let intensities = record.iter().skip(3).map(|value| {
             if value == "#N/A" {
                 None
@@ -63,14 +63,14 @@ fn extract_peptides(rdr: &mut Reader<Cursor<Vec<u8>>>) -> Result<Vec<Peptide>, B
     Ok(peptides)
 }
 
-fn extract_headers(rdr: &mut Reader<Cursor<Vec<u8>>>) -> Result<(Vec<Day>, Vec<Mouse>, Vec<Label>), Box<dyn std::error::Error>> {
+fn extract_headers(rdr: &mut Reader<Cursor<Vec<u8>>>) -> Result<(Vec<Day>, Vec<Mouse>, Vec<Label>), String> {
     let mut non_empty_row_count = 0;
     let mut days = vec![];
     let mut mice = vec![];
     let mut labels = vec![];
 
     for row in rdr.records() {
-        let record = row?;
+        let record = row.map_err(|_| "Failed to read row from spreadsheet")?;
         if record.iter().any(|field| !field.is_empty()) {
             non_empty_row_count += 1;
 

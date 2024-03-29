@@ -19,7 +19,7 @@ pub struct Calculation {
     pub samples_omitted: u64,
 }
 
-pub async fn aggregate(spreadsheets: &Vec<(PathBuf, u64)>) -> Result<Vec<Calculation>, String> {
+pub async fn aggregate(spreadsheets: &Vec<(PathBuf, u64)>) -> Result<Vec<Calculation>, Box<dyn std::error::Error>> {
     let mut calculations = vec![];
 
     for spreadsheet in spreadsheets {
@@ -30,15 +30,15 @@ pub async fn aggregate(spreadsheets: &Vec<(PathBuf, u64)>) -> Result<Vec<Calcula
     Ok(calculations)
 }
 
-async fn parse_calculations(spreadsheet: &(PathBuf, u64)) -> Result<Vec<Calculation>, String> {
-    let contents = fs::read(&spreadsheet.0).await.map_err(|err| format!("Error reading calculations file: {}", err))?;
+async fn parse_calculations(spreadsheet: &(PathBuf, u64)) -> Result<Vec<Calculation>, Box<dyn std::error::Error>> {
+    let contents = fs::read(&spreadsheet.0).await?;
     let mut rdr = ReaderBuilder::new()
         .from_reader(Cursor::new(contents));
 
     let mut calculations = vec![];
 
     for result in rdr.records() {
-        let record = result.map_err(|err| format!("Error reading record: {}", err))?;
+        let record = result?;
         let calculation = Calculation {
             protein: record[0].to_string(),
             peptide: record[1].trim().to_string(),

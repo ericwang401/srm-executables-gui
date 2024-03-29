@@ -17,6 +17,7 @@ pub struct Dataset {
 
 
 pub async fn serialize(
+    should_remove_na_calculations: bool,
     path: &Path,
     days: Vec<Day>,
     mice: Vec<Mouse>,
@@ -32,7 +33,18 @@ pub async fn serialize(
             filtered_labels,
             filtered_peptides,
             columns_removed
-        ) = prepare_peptides(&days, &mice, &labels, group);
+        ) = if should_remove_na_calculations {
+            prepare_peptides(&days, &mice, &labels, group)
+        } else {
+            (
+                days.clone(),
+                mice.clone(),
+                labels.clone(),
+                group.peptides.clone(),
+                0
+            )
+        };
+
         let peptides = serialize_peptides(path, &filtered_days, &filtered_mice, &filtered_labels, filtered_peptides)?;
 
         let heavy_water = serialize_heavy_water_file(path, &filtered_days, &filtered_labels).await?;
@@ -174,8 +186,8 @@ fn prepare_peptides(
     (filtered_days, filtered_mice, filtered_labels, filtered_peptides, columns_removed as u64)
 }
 
-pub fn serialize_calculations(path: &Path, calculations: &Vec<Calculation>) -> Result<(), String> {
-    let mut wtr = Writer::from_path(path).map_err(|e| e.to_string())?;
+pub fn serialize_calculations(path: &Path, calculations: &Vec<Calculation>) -> Result<(), Box<dyn std::error::Error>> {
+    let mut wtr = Writer::from_path(path)?;
     wtr.write_record(&[
         "Protein",
         "Peptide",
@@ -213,10 +225,10 @@ pub fn serialize_calculations(path: &Path, calculations: &Vec<Calculation>) -> R
             calculation.two_sd_plus.to_string(),
             calculation.n_ret_3.to_string(),
             samples_omitted,
-        ]).map_err(|e| e.to_string())?;
+        ])?;
     }
 
-    wtr.flush().map_err(|e| e.to_string())?;
+    wtr.flush()?;
 
 
     Ok(())

@@ -45,6 +45,7 @@ pub async fn install_dependencies(app_handle: tauri::AppHandle) -> Result<(), St
 pub async fn process_data(
     app_handle: tauri::AppHandle,
     should_remove_na_calculations: bool,
+    tolerance_multiplier: f64,
     input_file_path: String,
 ) -> Result<(), String> {
     let data_dir = app_handle
@@ -59,12 +60,17 @@ pub async fn process_data(
         .join("dependencies");
     let input_file_path = Path::new(&input_file_path);
 
-    let (days, mice, labels, peptides) = parse(input_file_path).await.unwrap();
+    let (
+        days,
+        mice,
+        labels,
+        peptides
+    ) = parse(input_file_path).await?;
 
-    let groups = group_by_peptides(peptides);
-    let groups = group_by_na_columns(groups);
+    let groups = group_by_na_columns(group_by_peptides(tolerance_multiplier, peptides));
 
     let datasets = serialize(
+        should_remove_na_calculations,
         &data_dir,
         days,
         mice,
@@ -72,8 +78,8 @@ pub async fn process_data(
         groups,
     ).await.unwrap();
 
-    let calculations = analyze(&dependencies_dir, &data_dir, &datasets).await.unwrap();
-    let calculations = aggregate(&calculations).await.unwrap();
+    let calculations = analyze(&dependencies_dir, &data_dir, &datasets).await?;
+    let calculations = aggregate(&calculations).await.map_err(|e| e.to_string())?;
 
     let input_file_name = input_file_path
         .file_stem()
@@ -82,12 +88,12 @@ pub async fn process_data(
         .into_owned();
 
     let file_path = FileDialogBuilder::new()
-            .set_file_name(&format!("{input_file_name}.RateConst.csv"))
-            .add_filter("Output CSV File", &vec!["csv"])
-            .save_file();
+        .set_file_name(&format!("{input_file_name}.RateConst.csv"))
+        .add_filter("Output CSV File", &vec!["csv"])
+        .save_file();
 
     if let Some(file_path) = file_path {
-        serialize_calculations(&file_path, &calculations).unwrap();
+        serialize_calculations(&file_path, &calculations).map_err(|e| e.to_string())?;
     }
 
 
