@@ -97,8 +97,8 @@ fn serialize_peptides(
     mice: &Vec<Mouse>,
     labels: &Vec<Label>,
     peptides: Vec<Peptide>) -> Result<PathBuf, Box<dyn std::error::Error>> {
-    let file_name = format!("peptides_{}.csv", uuid::Uuid::new_v4());
-    let mut wtr = Writer::from_path(path.join(file_name))?;
+    let file_path = path.join(format!("peptides_{}.csv", uuid::Uuid::new_v4()));
+    let mut wtr = Writer::from_path(file_path.clone())?;
 
     let days_str = [
         vec!["Day".to_string(), "".to_string(), "".to_string()],
@@ -138,7 +138,7 @@ fn serialize_peptides(
 
     wtr.flush()?;
 
-    Ok(path.to_path_buf())
+    Ok(file_path)
 }
 
 fn prepare_peptides(
