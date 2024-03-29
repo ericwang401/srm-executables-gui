@@ -129,9 +129,19 @@ fn serialize_peptides(
     wtr.write_record(&headers_str)?;
 
     for peptide in peptides {
+        let intensities = peptide
+            .intensities
+            .iter()
+            .map(|i| {
+                match i {
+                    None => "#N/A".to_string(),
+                    Some(i) => i.to_string(),
+                }
+            }).collect();
+
         let record = [
             vec![peptide.protein, peptide.name, peptide.mass_charge_ratio.to_string()],
-            peptide.intensities.iter().map(|i| i.unwrap().to_string()).collect()
+            intensities
         ].concat();
         wtr.write_record(&record)?;
     }
