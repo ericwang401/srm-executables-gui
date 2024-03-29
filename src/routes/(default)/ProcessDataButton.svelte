@@ -2,7 +2,7 @@
     import { Button } from '$lib/components/ui/button'
     import { invoke } from '@tauri-apps/api/tauri'
     import { toast } from 'svelte-sonner'
-    import { shouldRemoveNACalculations, toleranceMultiplier } from './InputDataCard.svelte'
+    import { shouldRemoveNACalculations, toleranceMultiplier } from './SettingsCard.svelte'
 
     import { open } from '@tauri-apps/api/dialog'
 

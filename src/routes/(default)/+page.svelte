@@ -1,6 +1,6 @@
 <script lang='ts'>
     import InstallDepsCard from './InstallDepsCard.svelte'
-    import InputDataCard from './InputDataCard.svelte'
+    import InputDataCard from './SettingsCard.svelte'
     import ProcessDataButton from './ProcessDataButton.svelte'
 
 </script>

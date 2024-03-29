@@ -29,7 +29,8 @@
                     </Tooltip.Trigger>
                     <Tooltip.Content class='max-w-md'>
                         <p>SRM heuristically detects data pertaining to different charges for a given peptide. It uses
-                            standard deviation times this multipler to determine which mass-charge ratio don't belong in the
+                            standard deviation times this multipler to determine which mass-charge ratio don't belong in
+                            the
                             same group. Adjust to what works, but 2.0 is recommended.</p>
                     </Tooltip.Content>
                 </Tooltip.Root>
@@ -45,7 +46,7 @@
                 </Tooltip.Trigger>
                 <Tooltip.Content class='max-w-md'>
                     <p>Removes samples with no detected peaks from the input for a given peptide to avoid "-nan(ind)"
-                        calculations.</p>
+                        calculations. This doesn't get rid of all "-nan(ind)" calculations but helps mitigate them.</p>
                 </Tooltip.Content>
             </Tooltip.Root>
         </div>
