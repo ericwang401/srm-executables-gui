@@ -75,30 +75,23 @@ fn extract_headers(rdr: &mut Reader<Cursor<Vec<u8>>>) -> Result<(Vec<Day>, Vec<M
             non_empty_row_count += 1;
 
             if non_empty_row_count == 1 {
-                days = record
-                    .iter()
-                    .skip(3)
-                    .map(|col| col.to_string().parse::<Day>().unwrap())
-                    .collect::<Vec<_>>();
+                for col in record.iter().skip(3) {
+                    let day: Day = col.to_string().parse().map_err(|_| "Failed to parse day")?;
+                    days.push(day);
+                }
+            } else if non_empty_row_count == 2 {
+                for col in record.iter().skip(3) {
+                    let mouse: Mouse = col.to_string().parse().map_err(|_| "Failed to parse mouse")?;
+                    mice.push(mouse);
+                }
+            } else if non_empty_row_count == 3 {
+                for col in record.iter().skip(3) {
+                    let label: Label = col.to_string().parse().map_err(|_| "Failed to parse label")?;
+                    labels.push(label);
+                }
             }
 
-            if non_empty_row_count == 2 {
-                mice = record
-                    .iter()
-                    .skip(3)
-                    .map(|col| col.to_string().parse::<Mouse>().unwrap())
-                    .collect::<Vec<_>>();
-            }
-
-            if non_empty_row_count == 3 {
-                labels = record
-                    .iter()
-                    .skip(3)
-                    .map(|col| col.to_string().parse::<Label>().unwrap())
-                    .collect::<Vec<_>>();
-            }
-
-            if non_empty_row_count == 4 {
+            if non_empty_row_count >= 4 {
                 break;
             }
         }
