@@ -1,3 +1,4 @@
+use std::env::temp_dir;
 use std::io::Cursor;
 use std::path::Path;
 
@@ -48,11 +49,9 @@ pub async fn process_data(
     tolerance_multiplier: f64,
     input_file_path: String,
 ) -> Result<(), String> {
-    let data_dir = app_handle
-        .path_resolver()
-        .app_local_data_dir()
-        .unwrap()
-        .join("data");
+    let temp_dir = tempfile::tempdir().map_err(|e| e.to_string())?;
+    let data_dir = temp_dir.path().join("data");
+    dbg!(temp_dir.path());
     let dependencies_dir = app_handle
         .path_resolver()
         .app_local_data_dir()
@@ -96,6 +95,6 @@ pub async fn process_data(
         serialize_calculations(&file_path, &calculations).map_err(|e| e.to_string())?;
     }
 
-
+    temp_dir.close().map_err(|e| e.to_string())?;
     Ok(())
 }

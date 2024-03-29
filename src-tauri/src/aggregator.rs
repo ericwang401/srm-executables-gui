@@ -2,6 +2,7 @@ use std::io::Cursor;
 use std::path::PathBuf;
 use csv::ReaderBuilder;
 use tokio::fs;
+use tokio::fs::remove_file;
 
 pub struct Calculation {
     pub protein: String,
@@ -25,6 +26,8 @@ pub async fn aggregate(spreadsheets: &Vec<(PathBuf, u64)>) -> Result<Vec<Calcula
     for spreadsheet in spreadsheets {
         let mut spreadsheet_calculations = parse_calculations(spreadsheet).await?;
         calculations.append(&mut spreadsheet_calculations);
+
+        remove_file(&spreadsheet.0).await?;
     }
 
     Ok(calculations)

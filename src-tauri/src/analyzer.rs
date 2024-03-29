@@ -1,4 +1,5 @@
 use std::path::{Path, PathBuf};
+use tokio::fs::remove_file;
 use tokio::process::Command;
 use crate::serializer::Dataset;
 
@@ -26,6 +27,9 @@ async fn analyze_single(deps_dir: &Path, data_dir: &Path, dataset: &Dataset) -> 
         .output()
         .await
         .map_err(|err| format!("Command couldn't run: {err}"))?;
+
+    remove_file(&dataset.heavy_water).await.map_err(|err| format!("Couldn't delete heavy water file: {err}"))?;
+    remove_file(&dataset.spreadsheet).await.map_err(|err| format!("Couldn't delete spreadsheet file: {err}"))?;
 
     if output.status.success() {
         Ok((data_dir.join(format!("{input_file_name}.RateConst.csv")), dataset.samples_removed))

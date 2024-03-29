@@ -23,6 +23,7 @@ reqwest = "0.11.20"
 zip-extract = "0.1.2"
 uuid = { version = "1.4.1", features = ["v4", "fast-rng"] }
 csv = "1.3.0"
+tempfile = "3.10.1"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem and the built-in dev server is disabled.
