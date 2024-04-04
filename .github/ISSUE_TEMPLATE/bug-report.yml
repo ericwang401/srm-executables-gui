@@ -1,0 +1,65 @@
+name: Bug Report
+description: Something isn't working quite right in the software.
+labels: [ bug,not confirmed ]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Bug reports should only be used for reporting issues with how the software works.
+
+  - type: textarea
+    attributes:
+      label: Current Behavior
+      description: Please provide a clear & concise description of the issue.
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Expected Behavior
+      description: Please describe what you expected to happen.
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Steps to Reproduce
+      description: Please be as detailed as possible when providing steps to reproduce, failure to provide steps will result in this issue being closed.
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Screenshots
+      description: If applicable, add screenshots to help explain your problem.
+
+  - type: input
+    attributes:
+      label: Software Version
+      description: The version of the software you are using.
+      placeholder: x.x.x
+    validations:
+        required: true
+
+  - type: input
+    attributes:
+      label: Operating System
+      description: The OS you are using on your own computer to use this software.
+      placeholder: (e.g., Windows 11 22H2)
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Additional Context
+      description: Add any other context about the problem here.
+
+  - type: checkboxes
+    attributes:
+      label: Is there an existing issue for this?
+      description: Please [search here](https://github.com/OMRF/srm-executables-gui/issues) to see if an issue already exists for your problem.
+      options:
+        - label: I have searched the existing issues before opening this issue.
+          required: true
+        - label: I believe this is a bug with the software, and not a configuration issue with my specific system.
+          required: true
