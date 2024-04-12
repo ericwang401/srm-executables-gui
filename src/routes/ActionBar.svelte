@@ -5,6 +5,8 @@
     import { shouldRemoveNACalculations, toleranceMultiplier } from './SettingsCard.svelte'
 
     import { open } from '@tauri-apps/api/dialog'
+    import TimepointEngineSelector from './TimepointEngineSelector.svelte'
+    import SettingsPanel from '$lib/components/interfaces/settings/SettingsPanel.svelte'
 
     let loading = false
 
@@ -35,6 +37,9 @@
     }
 </script>
 
-<div class="flex justify-end pb-4">
+<div class="flex items-center pb-4 space-x-3">
+    <TimepointEngineSelector />
+    <div class="grow" />
+    <SettingsPanel />
     <Button {loading} on:click={processData}>Process data</Button>
 </div>
