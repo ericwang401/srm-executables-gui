@@ -60,3 +60,14 @@ export const flyAndScale = (
         easing: cubicOut
     };
 };
+
+export function validateFileExtension(path: string, extensions: string[]) {
+    const ext = path.split(".").pop();
+    return extensions.includes(ext!);
+}
+
+export function getFileName(path: string, includeExtension = true) {
+    const parts = path.split(/[\\/]/);
+    const fileName = parts[parts.length - 1];
+    return includeExtension ? fileName : fileName.split(".").slice(0, -1).join(".");
+}

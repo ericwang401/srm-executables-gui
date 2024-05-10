@@ -23,15 +23,27 @@
             {/await}
         </h1>
         <p class="max-w-2xl text-muted-foreground text-sm md:text-base">
-            A utility that calculates the synthesis rates of specific proteins. Created by <a
-            class="font-medium underline underline-offset-4"
+            A utility that calculates the synthesis rates of proteins. Created by <a
+            class="link"
             href="https://github.com/ericwang401"
             target="_blank"
         >
             Eric Wang
+        </a> | <a
+            class="link"
+            href="https://github.com/OMRF/srm-executables-gui"
+            target="_blank"
+        >
+            Source
         </a>
         </p>
     </div>
 
     <slot />
 </ContentContainer>
+
+<style lang="postcss">
+    .link {
+        @apply font-medium underline underline-offset-4;
+    }
+</style>

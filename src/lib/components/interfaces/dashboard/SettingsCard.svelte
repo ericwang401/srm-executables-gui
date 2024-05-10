@@ -1,10 +1,4 @@
-<script lang="ts" context="module">
-    import { writable } from 'svelte/store'
-
-    export const shouldRemoveNACalculations = writable<boolean>(false)
-    export const toleranceMultiplier = writable<number>(2.0)
-
-</script>
+<script lang="ts" context="module"></script>
 
 
 <script lang="ts">
@@ -14,6 +8,7 @@
     import { Label } from '$lib/components/ui/label'
     import * as Tooltip from '$lib/components/ui/tooltip'
     import { Input } from '$lib/components/ui/input'
+    import { shouldRemoveNACalculations, toleranceMultiplier } from '$lib/stores/settings'
 </script>
 
 <Card.Root class="col-span-1 md:col-span-2">

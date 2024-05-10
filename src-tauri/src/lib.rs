@@ -4,3 +4,4 @@ pub mod grouper;
 pub mod serializer;
 pub mod analyzer;
 pub mod aggregator;
+pub mod processor;
