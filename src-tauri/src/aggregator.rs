@@ -4,6 +4,7 @@ use csv::ReaderBuilder;
 use tokio::fs;
 use tokio::fs::remove_file;
 
+#[derive(Debug)]
 pub struct Calculation {
     pub protein: String,
     pub peptide: String,

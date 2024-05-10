@@ -9,6 +9,7 @@ use crate::aggregator::Calculation;
 use crate::grouper::NAGroup;
 use crate::parser::{Day, Label, Mouse, Peptide};
 
+#[derive(Debug)]
 pub struct Dataset {
     pub spreadsheet: PathBuf,
     pub heavy_water: PathBuf,
