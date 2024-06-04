@@ -48,7 +48,10 @@ pub async fn process_data(
     should_remove_na_calculations: bool,
     tolerance_multiplier: f64,
     input_files: Vec<String>,
-) -> Result<(), String> {}
+) -> Result<(), String> {
+    // TODO: https://tauri.app/v1/guides/features/events/
+    Ok(())
+}
 
 #[tauri::command]
 pub async fn old_process_data(
