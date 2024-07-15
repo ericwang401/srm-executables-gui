@@ -1,13 +1,22 @@
 <script lang="ts">
-    import EmptyStateInputSelector from '$lib/components/interfaces/dashboard/EmptyStateInputSelector.svelte'
+    import EmptyStateInputSelector from '$lib/components/interfaces/dashboard/InputFileSelector.svelte'
     import InputDataRow from '$lib/components/interfaces/dashboard/InputDataRow.svelte'
-    import { inputFiles } from '$lib/stores/input'
+
+    import type { Form as FormType } from '$lib/types/form'
+
+    export let form: FormType
+
+    const { form: formData } = form
+
+    const deleteInputFile = (uuid: string) => {
+        $formData.inputFiles = $formData.inputFiles.filter(file => file.uuid !== uuid)
+    }
 </script>
 
-<EmptyStateInputSelector compact={$inputFiles.length > 0} />
+<EmptyStateInputSelector {form} />
 
 <div class="flex flex-col space-y-1 mt-4">
-    {#each $inputFiles as inputFile, index}
-        <InputDataRow {inputFile} {index} />
+    {#each $formData.inputFiles as inputFile}
+        <InputDataRow on:delete={() => deleteInputFile(inputFile.uuid)} {inputFile} />
     {/each}
 </div>

@@ -6,11 +6,14 @@
     import { Input } from '$lib/components/ui/input'
     import { Label } from '$lib/components/ui/label'
     import * as Tooltip from '$lib/components/ui/tooltip'
+    import * as Form from '$lib/components/ui/form'
     import { Switch } from '$lib/components/ui/switch'
 
+    import type { Form as FormType } from '$lib/types/form'
 
-    let toleranceMultiplier = 2.0
-    let shouldRemoveNACalculations = true
+    export let form: FormType
+
+    const { form: formData } = form
 
 </script>
 
@@ -28,34 +31,47 @@
         <div class="flex flex-col space-y-4 py-6">
             <div class="flex flex-col space-y-1.5">
                 <div class="flex items-center space-x-2">
-                    <Switch id="should-remove-na-calculations" bind:checked={shouldRemoveNACalculations} />
+                    <Switch id="should-remove-na-calculations" bind:checked={$formData.shouldRemoveNACalculations} />
                     <Label for="should-remove-na-calculations">Avoid N/A Calculations</Label>
                     <Tooltip.Root>
                         <Tooltip.Trigger>
                             <Icon src={InformationCircle} mini class='w-4 h-4' />
                         </Tooltip.Trigger>
                         <Tooltip.Content class='max-w-md'>
-                            <p>Removes samples with no detected peaks from the input for a given peptide to avoid "-nan(ind)"
-                                calculations. This doesn't get rid of all "-nan(ind)" calculations but helps mitigate them.</p>
+                            <p>Removes samples with no detected peaks from the input for a given peptide to avoid
+                                "-nan(ind)"
+                                calculations. This doesn't get rid of all "-nan(ind)" calculations but helps mitigate
+                                them.</p>
                         </Tooltip.Content>
                     </Tooltip.Root>
                 </div>
             </div>
             <div class="flex flex-col space-y-1.5">
-                <Label class="flex items-center gap-2" for="tolerance-multiplier">Tolerance Multiplier
-                    <Tooltip.Root>
-                        <Tooltip.Trigger>
-                            <Icon src={InformationCircle} mini class='w-4 h-4' />
-                        </Tooltip.Trigger>
-                        <Tooltip.Content class='max-w-md'>
-                            <p>SRM heuristically detects data pertaining to different charges for a given peptide. It uses
-                                standard deviation times this multipler to determine which mass-charge ratio don't belong in
-                                the
-                                same group. Adjust to what works, but 2.0 is recommended.</p>
-                        </Tooltip.Content>
-                    </Tooltip.Root>
-                </Label>
-                <Input id="tolerance-multiplier" type="number" step=".1" bind:value={toleranceMultiplier} />
+                <Form.Field {form} name="toleranceMultiplier">
+                    <Form.Control let:attrs>
+                        <Form.Label class="flex items-center gap-2">
+                            Tolerance Multiplier
+                            <Tooltip.Root>
+                                <Tooltip.Trigger>
+                                    <Icon src={InformationCircle} mini class='w-4 h-4' />
+                                </Tooltip.Trigger>
+                                <Tooltip.Content class='max-w-md'>
+                                    <p>SRM heuristically detects data pertaining to different charges for a given
+                                        peptide. It
+                                        uses
+                                        standard deviation times this multipler to determine which mass-charge ratio
+                                        don't
+                                        belong in
+                                        the
+                                        same group. Adjust to what works, but 2.0 is recommended.</p>
+                                </Tooltip.Content>
+                            </Tooltip.Root>
+                        </Form.Label>
+                        <Input {...attrs} type="number" step=".1" bind:value={$formData.toleranceMultiplier} />
+                    </Form.Control>
+
+                    <Form.FieldErrors />
+                </Form.Field>
             </div>
         </div>
         <Sheet.Footer>

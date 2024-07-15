@@ -3,9 +3,13 @@
     import { appWindow } from '@tauri-apps/api/window'
     import { onMount } from 'svelte'
     import type { UnlistenFn } from '@tauri-apps/api/event'
-    import { validateFileExtension } from '$lib/utils'
+    import { processInputFiles } from '$lib/utils'
     import { toast } from 'svelte-sonner'
-    import { createInputFile, type InputFile, inputFiles } from '$lib/stores/input'
+    import type { Form as FormType } from '$lib/types/form'
+
+    export let form: FormType
+
+    const { form: formData } = form
 
     let dragging = false
     let animationKey = Math.random()
@@ -20,16 +24,13 @@
                     dragging = true
                 } else if (event.payload.type === 'drop') {
                     dragging = false
-                    const files: InputFile[] = event.payload.paths
-                        .filter((path) => validateFileExtension(path, ['csv']))
-                        .filter((path) => !$inputFiles.some(file => file.path === path))
-                        .map(path => createInputFile(path))
+                    const files = processInputFiles(event.payload.paths)
 
                     if (files.length !== event.payload.paths.length) {
                         toast.warning('Some files were removed because they weren\'t CSVs or are duplicates')
                     }
 
-                    $inputFiles = [...files, ...$inputFiles]
+                    $formData.inputFiles = [...files, ...$formData.inputFiles]
                 } else {
                     dragging = false
                 }
