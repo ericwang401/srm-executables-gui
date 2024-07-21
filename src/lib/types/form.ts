@@ -17,7 +17,7 @@ export type InputFile = z.infer<typeof inputFileSchema>
 export const schema = z.object({
     engineType: engineSchema,
     shouldRemoveNACalculations: z.boolean(),
-    toleranceMultiplier: z.number().min(0),
+    toleranceMultiplier: z.coerce.number().min(0),
     inputFiles: z.array(inputFileSchema).min(0),
 })
 

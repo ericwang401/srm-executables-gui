@@ -48,5 +48,5 @@
     {/if}
     <p class={cn("text-muted-foreground text-sm font-light", inputFilesLength === 0 && 'mt-1')}>Drag n' drop .csv
         spreadsheets or click here to select
-        input data.</p>
+        input data</p>
 </div>

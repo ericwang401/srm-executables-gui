@@ -27,7 +27,7 @@
                     const files = processInputFiles(event.payload.paths)
 
                     if (files.length !== event.payload.paths.length) {
-                        toast.warning('Some files were removed because they weren\'t CSVs or are duplicates')
+                        toast.warning('Some non-CSV files were removed')
                     }
 
                     $formData.inputFiles = [...files, ...$formData.inputFiles]

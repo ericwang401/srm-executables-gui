@@ -10,6 +10,7 @@
     import { Switch } from '$lib/components/ui/switch'
 
     import type { Form as FormType } from '$lib/types/form'
+    import SuperDebug from 'sveltekit-superforms'
 
     export let form: FormType
 
@@ -19,9 +20,9 @@
 
 <Sheet.Root>
     <Sheet.Trigger>
-        <CogButton />
+        <CogButton type="button" />
     </Sheet.Trigger>
-    <Sheet.Content side="right">
+    <Sheet.Content side="right" portal={false}>
         <Sheet.Header>
             <Sheet.Title>Advanced Settings</Sheet.Title>
             <Sheet.Description>
@@ -29,22 +30,20 @@
             </Sheet.Description>
         </Sheet.Header>
         <div class="flex flex-col space-y-4 py-6">
-            <div class="flex flex-col space-y-1.5">
-                <div class="flex items-center space-x-2">
-                    <Switch id="should-remove-na-calculations" bind:checked={$formData.shouldRemoveNACalculations} />
-                    <Label for="should-remove-na-calculations">Avoid N/A Calculations</Label>
-                    <Tooltip.Root>
-                        <Tooltip.Trigger>
-                            <Icon src={InformationCircle} mini class='w-4 h-4' />
-                        </Tooltip.Trigger>
-                        <Tooltip.Content class='max-w-md'>
-                            <p>Removes samples with no detected peaks from the input for a given peptide to avoid
-                                "-nan(ind)"
-                                calculations. This doesn't get rid of all "-nan(ind)" calculations but helps mitigate
-                                them.</p>
-                        </Tooltip.Content>
-                    </Tooltip.Root>
-                </div>
+            <div class="flex items-center space-x-2">
+                <Switch id="should-remove-na-calculations" bind:checked={$formData.shouldRemoveNACalculations} />
+                <Label for="should-remove-na-calculations">Avoid N/A Calculations</Label>
+                <Tooltip.Root>
+                    <Tooltip.Trigger>
+                        <Icon src={InformationCircle} mini class='w-4 h-4' />
+                    </Tooltip.Trigger>
+                    <Tooltip.Content class='max-w-md'>
+                        <p>Removes samples with no detected peaks from the input for a given peptide to avoid
+                            "-nan(ind)"
+                            calculations. This doesn't get rid of all "-nan(ind)" calculations but helps mitigate
+                            them.</p>
+                    </Tooltip.Content>
+                </Tooltip.Root>
             </div>
             <div class="flex flex-col space-y-1.5">
                 <Form.Field {form} name="toleranceMultiplier">
@@ -67,7 +66,7 @@
                                 </Tooltip.Content>
                             </Tooltip.Root>
                         </Form.Label>
-                        <Input {...attrs} type="number" step=".1" bind:value={$formData.toleranceMultiplier} />
+                        <Input {...attrs} bind:value={$formData.toleranceMultiplier} />
                     </Form.Control>
 
                     <Form.FieldErrors />
@@ -76,7 +75,7 @@
         </div>
         <Sheet.Footer>
             <Sheet.Close asChild let:builder>
-                <Button builders={[builder]} type="submit">Save changes</Button>
+                <Button builders={[builder]} type="button">Save changes</Button>
             </Sheet.Close>
         </Sheet.Footer>
     </Sheet.Content>

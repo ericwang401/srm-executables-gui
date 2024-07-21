@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
-
+use anyhow::anyhow;
 use csv::Writer;
 use tokio::fs::File;
 use tokio::io::AsyncWriteExt;
@@ -24,7 +24,7 @@ pub async fn serialize(
     mice: Vec<Mouse>,
     labels: Vec<Label>,
     groups: Vec<NAGroup>,
-) -> Result<Vec<Dataset>, Box<dyn std::error::Error>> {
+) -> anyhow::Result<Vec<Dataset>> {
     let mut datasets = vec![];
 
     for group in groups {
@@ -60,10 +60,10 @@ pub async fn serialize(
     Ok(datasets)
 }
 
-async fn serialize_heavy_water_file(path: &Path, days: &Vec<Day>, labels: &Vec<Label>) -> Result<PathBuf, Box<dyn std::error::Error>> {
+async fn serialize_heavy_water_file(path: &Path, days: &Vec<Day>, labels: &Vec<Label>) -> anyhow::Result<PathBuf> {
     // Ensure the input vectors are of the same length
     if days.len() != labels.len() {
-        return Err("Days and labels vectors must have the same length.".into());
+        return Err(anyhow!("Days and labels vectors must have the same length."));
     }
 
     // Generate a unique file name
@@ -97,7 +97,8 @@ fn serialize_peptides(
     days: &Vec<Day>,
     mice: &Vec<Mouse>,
     labels: &Vec<Label>,
-    peptides: Vec<Peptide>) -> Result<PathBuf, Box<dyn std::error::Error>> {
+    peptides: Vec<Peptide>
+) -> anyhow::Result<PathBuf> {
     let file_path = path.join(format!("peptides_{}.csv", uuid::Uuid::new_v4()));
     let mut wtr = Writer::from_path(file_path.clone())?;
 
@@ -203,7 +204,7 @@ fn prepare_peptides(
     (filtered_days, filtered_mice, filtered_labels, filtered_peptides, columns_removed as u64)
 }
 
-pub fn serialize_calculations(path: &Path, calculations: &Vec<Calculation>) -> Result<(), Box<dyn std::error::Error>> {
+pub fn serialize_calculations(path: &Path, calculations: &Vec<Calculation>) -> anyhow::Result<()> {
     let mut wtr = Writer::from_path(path)?;
     wtr.write_record(&[
         "Protein",
@@ -219,7 +220,7 @@ pub fn serialize_calculations(path: &Path, calculations: &Vec<Calculation>) -> R
         "Two_SD_Plus",
         "nRet",
         "",
-    ]).map_err(|e| e.to_string())?;
+    ]).map_err(|e| anyhow!(e.to_string()))?;
 
     for calculation in calculations {
         let samples_omitted = if calculation.samples_omitted == 0 {

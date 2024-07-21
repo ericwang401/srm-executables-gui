@@ -75,7 +75,9 @@
         "providerShortName": null,
         "signingIdentity": null
       },
-      "resources": [],
+      "resources": [
+        "assets/*"
+      ],
       "shortDescription": "Protein synthesis rate calculator",
       "targets": "all",
       "windows": {

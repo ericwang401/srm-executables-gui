@@ -1,6 +1,6 @@
 <script lang="ts">
     import EmptyStateInputSelector from '$lib/components/interfaces/dashboard/InputFileSelector.svelte'
-    import InputDataRow from '$lib/components/interfaces/dashboard/InputDataRow.svelte'
+    import InputData from '$lib/components/interfaces/dashboard/InputData.svelte'
 
     import type { Form as FormType } from '$lib/types/form'
 
@@ -17,6 +17,6 @@
 
 <div class="flex flex-col space-y-1 mt-4">
     {#each $formData.inputFiles as inputFile}
-        <InputDataRow on:delete={() => deleteInputFile(inputFile.uuid)} {inputFile} />
+        <InputData on:delete={() => deleteInputFile(inputFile.uuid)} {inputFile} />
     {/each}
 </div>

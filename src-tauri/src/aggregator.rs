@@ -21,7 +21,7 @@ pub struct Calculation {
     pub samples_omitted: u64,
 }
 
-pub async fn aggregate(spreadsheets: &Vec<(PathBuf, u64)>) -> Result<Vec<Calculation>, Box<dyn std::error::Error>> {
+pub async fn aggregate(spreadsheets: &Vec<(PathBuf, u64)>) -> anyhow::Result<Vec<Calculation>> {
     let mut calculations = vec![];
 
     for spreadsheet in spreadsheets {
@@ -34,7 +34,7 @@ pub async fn aggregate(spreadsheets: &Vec<(PathBuf, u64)>) -> Result<Vec<Calcula
     Ok(calculations)
 }
 
-async fn parse_calculations(spreadsheet: &(PathBuf, u64)) -> Result<Vec<Calculation>, Box<dyn std::error::Error>> {
+async fn parse_calculations(spreadsheet: &(PathBuf, u64)) -> anyhow::Result<Vec<Calculation>> {
     let contents = fs::read(&spreadsheet.0).await?;
     let mut rdr = ReaderBuilder::new()
         .from_reader(Cursor::new(contents));

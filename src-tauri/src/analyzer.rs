@@ -1,21 +1,22 @@
 use std::path::{Path, PathBuf};
+use anyhow::anyhow;
 use tokio::fs::remove_file;
 use tokio::process::Command;
 use crate::serializer::Dataset;
 
 
-pub async fn analyze(deps_dir: &Path, data_dir: &Path, datasets: &Vec<Dataset>) -> Result<Vec<(PathBuf, u64)>, String> {
+pub async fn analyze_all(deps_dir: &Path, data_dir: &Path, datasets: &Vec<Dataset>) -> anyhow::Result<Vec<(PathBuf, u64)>> {
     let mut results = vec![];
 
     for dataset in datasets {
-        let result = analyze_single(deps_dir, data_dir, dataset).await?;
+        let result = analyze(deps_dir, data_dir, dataset).await?;
         results.push(result);
     }
 
     Ok(results)
 }
 
-async fn analyze_single(deps_dir: &Path, data_dir: &Path, dataset: &Dataset) -> Result<(PathBuf, u64), String> {
+async fn analyze(deps_dir: &Path, data_dir: &Path, dataset: &Dataset) -> anyhow::Result<(PathBuf, u64)> {
     let mut command = Command::new(deps_dir.join("SRM_Rate.exe")); // TODO: figure out lifetimes here
 
     command.arg(dataset.heavy_water.to_str().unwrap())
@@ -26,14 +27,14 @@ async fn analyze_single(deps_dir: &Path, data_dir: &Path, dataset: &Dataset) -> 
     let output = command
         .output()
         .await
-        .map_err(|err| format!("Command couldn't run: {err}"))?;
+        .map_err(|err| anyhow!(format!("Command couldn't run: {err}")))?;
 
-    remove_file(&dataset.heavy_water).await.map_err(|err| format!("Couldn't delete heavy water file: {err}"))?;
-    remove_file(&dataset.spreadsheet).await.map_err(|err| format!("Couldn't delete spreadsheet file: {err}"))?;
+    remove_file(&dataset.heavy_water).await.map_err(|err| anyhow!(format!("Couldn't delete heavy water file: {err}")))?;
+    remove_file(&dataset.spreadsheet).await.map_err(|err| anyhow!(format!("Couldn't delete spreadsheet file: {err}")))?;
 
     if output.status.success() {
         Ok((data_dir.join(format!("{input_file_name}.RateConst.csv")), dataset.samples_removed))
     } else {
-        Err(format!("The command didn't complete successfully: {}", String::from_utf8_lossy(&output.stdout)))
+        Err(anyhow!(format!("The command didn't complete successfully: {}", String::from_utf8_lossy(&output.stdout))))
     }
 }
