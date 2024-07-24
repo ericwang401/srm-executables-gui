@@ -52,7 +52,7 @@ pub async fn process_data(
     let temp_dir = tempfile::tempdir().map_err(|e| e.to_string())?;
     let data_dir = temp_dir.path().join("data");
     create_dir(&data_dir).await.map_err(|e| e.to_string())?;
-    dbg!(temp_dir.path());
+
     let dependencies_dir = app_handle
         .path_resolver()
         .app_local_data_dir()
