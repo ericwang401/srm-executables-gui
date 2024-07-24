@@ -45,6 +45,10 @@ pub async fn serialize(
             )
         };
 
+        if (filtered_peptides.len() == 0) {
+            continue;
+        }
+
         let peptides = serialize_peptides(path, &filtered_days, &filtered_mice, &filtered_labels, filtered_peptides)?;
 
         let heavy_water = serialize_heavy_water_file(path, &filtered_days, &filtered_labels).await?;
