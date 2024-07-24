@@ -22,7 +22,8 @@
 
             await invoke('process_data', {
                 inputFilePath: selected,
-                toleranceMultiplier: $toleranceMultiplier,
+                // @ts-expect-error: I'm doing this because for some reason toleranceMultipler can randomly turn into a string
+                toleranceMultiplier: parseFloat($toleranceMultiplier),
                 shouldRemoveNaCalculations: $shouldRemoveNACalculations,
             })
 
