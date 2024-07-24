@@ -96,7 +96,8 @@ fn serialize_peptides(
     days: &Vec<Day>,
     mice: &Vec<Mouse>,
     labels: &Vec<Label>,
-    peptides: Vec<Peptide>) -> Result<PathBuf, Box<dyn std::error::Error>> {
+    peptides: Vec<Peptide>
+) -> Result<PathBuf, Box<dyn std::error::Error>> {
     let file_path = path.join(format!("peptides_{}.csv", uuid::Uuid::new_v4()));
     let mut wtr = Writer::from_path(file_path.clone())?;
 
@@ -183,17 +184,21 @@ fn prepare_peptides(
         .map(|(_, label)| label.clone())
         .collect();
 
-    let filtered_peptides = group.peptides.iter().map(|peptide| {
-        let filtered_intensities = peptide.intensities.iter().enumerate()
+    let filtered_peptides = group.peptides.iter().filter_map(|peptide| {
+        let filtered_intensities: Vec<Option<u64>> = peptide.intensities.iter().enumerate()
             .filter(|(i, _)| !na_columns.contains(i))
             .map(|(_, &intensity)| intensity)
             .collect();
 
-        Peptide {
-            name: peptide.name.clone(),
-            protein: peptide.protein.clone(),
-            mass_charge_ratio: peptide.mass_charge_ratio,
-            intensities: filtered_intensities,
+        if filtered_intensities.len() == 0 {
+            None
+        } else {
+            Some(Peptide {
+                name: peptide.name.clone(),
+                protein: peptide.protein.clone(),
+                mass_charge_ratio: peptide.mass_charge_ratio,
+                intensities: filtered_intensities,
+            })
         }
     }).collect();
 
