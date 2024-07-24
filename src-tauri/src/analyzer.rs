@@ -34,6 +34,6 @@ async fn analyze_single(deps_dir: &Path, data_dir: &Path, dataset: &Dataset) -> 
     if output.status.success() {
         Ok((data_dir.join(format!("{input_file_name}.RateConst.csv")), dataset.samples_removed))
     } else {
-        Err(format!("The command didn't complete successfully: {}", String::from_utf8_lossy(&output.stdout)))
+        Err(format!("The command didn't complete successfully: {}", String::from_utf8_lossy(&output.stderr)))
     }
 }
