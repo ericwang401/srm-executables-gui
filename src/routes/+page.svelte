@@ -6,6 +6,7 @@
     import { zod } from 'sveltekit-superforms/adapters'
     import { schema } from '$lib/types/form'
     import { invoke } from '@tauri-apps/api/tauri'
+    import { toast } from 'svelte-sonner'
 
 
     const form = superForm(defaults({
@@ -19,13 +20,11 @@
         SPA: true,
         validators: zod(schema),
         onUpdate: async ({ form }) => {
-            console.log('before validation', form)
             if (!form.valid) return
-            console.log('after validation', form)
 
             const { inputFiles, engineType, toleranceMultiplier, shouldRemoveNACalculations } = form.data
             const unprocessedFiles = inputFiles
-                .filter(file => !file.isProcessed)
+                .filter(file => file.totalIterations === 0)
                 .map(file => ({
                     uuid: file.uuid,
                     path: file.path.dir,
@@ -47,15 +46,15 @@
                     shouldRemoveNaCalculations: shouldRemoveNACalculations,
                 })
             } catch (e) {
-                console.error(e)
+                toast.error(e as string)
             }
         },
     })
 
-    const { enhance } = form
+    const { enhance, form: formData } = form
 </script>
 
-<!--<SuperDebug data={form} />-->
+<SuperDebug data={$formData} />
 <form method="POST" use:enhance class="flex flex-col space-y-8">
     <Dropzone {form} />
 

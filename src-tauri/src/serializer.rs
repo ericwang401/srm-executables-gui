@@ -5,7 +5,7 @@ use csv::Writer;
 use tokio::fs::File;
 use tokio::io::AsyncWriteExt;
 use crate::aggregator::Calculation;
-
+use crate::commands::{ProgressCallback, ProgressUpdate};
 use crate::grouper::NAGroup;
 use crate::parser::{Day, Label, Mouse, Peptide};
 
@@ -24,6 +24,7 @@ pub async fn serialize(
     mice: Vec<Mouse>,
     labels: Vec<Label>,
     groups: Vec<NAGroup>,
+    progress_callback: &ProgressCallback,
 ) -> anyhow::Result<Vec<Dataset>> {
     let mut datasets = vec![];
 
@@ -54,6 +55,10 @@ pub async fn serialize(
             spreadsheet: peptides,
             heavy_water,
             samples_removed: columns_removed,
+        });
+
+        progress_callback(ProgressUpdate::Increment {
+            iterations: 1,
         });
     }
 

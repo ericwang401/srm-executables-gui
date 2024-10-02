@@ -10,7 +10,9 @@ export const inputFileSchema = z.object({
     uuid: z.string(),
     path: PathSchema,
     engineType: engineSchema.nullable(),
-    isProcessed: z.boolean(),
+    iterations: z.number(),
+    totalIterations: z.number(),
+    errors: z.string().nullable(),
 })
 export type InputFile = z.infer<typeof inputFileSchema>
 

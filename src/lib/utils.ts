@@ -69,6 +69,8 @@ export function processInputFiles(paths: string[]): InputFile[] {
             uuid: uuidv4(),
             path: path.parse(filePath),
             engineType: null,
-            isProcessed: false,
+            iterations: 0,
+            totalIterations: 0,
+            errors: null,
         }))
 }

@@ -13,7 +13,7 @@ mod lib;
 #[tokio::main]
 async fn main() {
   tauri::Builder::default()
-    .invoke_handler(tauri::generate_handler![commands::install_dependencies, commands::process_data])
+    .invoke_handler(tauri::generate_handler![commands::process_data])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }
